@@ -3,6 +3,7 @@ struct GlobalData {
 }
 
 struct CellState {
+    id: u32,
     population: u32,
 }
 
@@ -11,13 +12,27 @@ struct IterationState {
     cells: Vec<CellState>,
 }
 
+enum Action {
+    ADD,
+}
+
 struct CellUpdate {
-    action: u32, // TODO: replace with action type
+    action: Action,
+    target_cell: u32,
+    value: u32, // could be int or float
 }
 
 struct Process {
     id: u32,
     pub func: Box<dyn Fn(&CellState) -> CellUpdate>,
+}
+
+fn example_process(cell_state: &CellState) -> CellUpdate {
+    CellUpdate {
+        target_cell: cell_state.id,
+        value: cell_state.population / 10,
+        action: Action::ADD,
+    }
 }
 
 fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> IterationState {
@@ -27,31 +42,40 @@ fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> Iterat
     };
     let mut cell_updates: Vec<CellUpdate> = Vec::new();
 
-    // Run for all cells
+    // Run each process on each cell
     for process in processes.iter() {
-        let i = process.id;
-        println!("Running process {}", i);
-        let func = &process.func;
-        let cell = &new_state.cells[0];
-        let cell_update: CellUpdate = func(cell);
-        cell_updates.push(cell_update);
+        for cell in new_state.cells.iter_mut() {
+            let i = process.id;
+            println!("Running process {} on cell {}", i, cell.id);
+            let func = &process.func;
+            let cell_update: CellUpdate = func(cell);
+            cell_updates.push(cell_update);
+        }
     }
-    new_state.cells[0].population += cell_updates[0].action;
+
+    // Run the resulting actions
+    for cell_action in cell_updates.iter() {
+        let id = cell_action.target_cell as usize;
+        new_state.cells[id].population += cell_action.value;
+    }
 
     new_state.global_data = new_global_state;
     new_state
 }
 
-fn example_process(cell_state: &CellState) -> CellUpdate {
-    CellUpdate {
-        action: cell_state.population,
-    }
-}
-
 fn main() {
     let initial_state = IterationState {
         global_data: GlobalData { iterations: 0 },
-        cells: vec![CellState { population: 12 }, CellState { population: 40 }],
+        cells: vec![
+            CellState {
+                population: 12,
+                id: 0,
+            },
+            CellState {
+                population: 40,
+                id: 1,
+            },
+        ],
     };
     let processes = vec![Process {
         id: 0,
@@ -59,9 +83,6 @@ fn main() {
     }];
     let final_state = run_iteration(processes, initial_state);
 
-    println!("Hello, world! {}", final_state.cells[0].population);
-    // let process = &processes[0].func;
-    // let cell = &initial_state.cells[0];
-    // let cell_update = process(cell);
-    // println!("hello {}", cell_update.action)
+    println!("Cell 0 pop! {}", final_state.cells[0].population);
+    println!("Cell 1 pop! {}", final_state.cells[1].population);
 }
