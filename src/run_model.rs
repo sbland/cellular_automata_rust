@@ -24,18 +24,18 @@ pub struct CellUpdate {
 
 pub struct Process {
     pub id: u32,
-    pub func: Box<dyn Fn(&CellState) -> CellUpdate>,
+    pub func: Box<dyn Fn(&CellState, &Vec<&CellState>) -> CellUpdate>,
 }
 
-fn run_process(cell: &CellState, process: &Process) -> CellUpdate {
+fn run_process(cell: &CellState, process: &Process, neighbours: &Vec<&CellState>) -> CellUpdate {
     let i = process.id;
     println!("Running process {} on cell {}", i, cell.id);
     let func = &process.func;
-    let cell_update: CellUpdate = func(&cell);
+    let cell_update: CellUpdate = func(&cell, &neighbours);
     cell_update
 }
 
-fn get_network_map(cells: Vec<CellState>) -> Vec<Vec<u32>> {
+fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<u32>> {
     let mut network: Vec<Vec<u32>> = Vec::new();
     for cell in cells.iter() {
         let mut cell_network: Vec<u32> = Vec::new();
@@ -56,10 +56,17 @@ pub fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> It
         iterations: new_state.global_data.iterations + 1,
     };
     let mut cell_updates: Vec<CellUpdate> = Vec::new();
+    let network: Vec<Vec<u32>> = get_network_map(&new_state.cells);
     // Run each process on each cell
     for cell in new_state.cells.iter() {
+        let cell_id = cell.id as usize;
+        let cell_network = &network[cell_id];
+        let neighbours = cell_network
+            .into_iter()
+            .map(|id| &new_state.cells[*id as usize])
+            .collect::<Vec<_>>();
         for process in processes.iter() {
-            let cell_update = run_process(&cell, &process);
+            let cell_update = run_process(&cell, &process, &neighbours);
             cell_updates.push(cell_update);
         }
     }
@@ -72,10 +79,22 @@ pub fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> It
     new_state
 }
 
-pub fn example_process(cell_state: &CellState) -> CellUpdate {
+pub fn example_process(cell_state: &CellState, neighbours: &Vec<&CellState>) -> CellUpdate {
     CellUpdate {
         target_cell: cell_state.id,
         value: cell_state.population / 10,
+        action: Action::ADD,
+    }
+}
+
+pub fn population_migration(cell_state: &CellState, neighbours: &Vec<&CellState>) -> CellUpdate {
+    let mut movement = 0;
+    for n in neighbours.iter() {
+        movement += n.population / 10;
+    }
+    CellUpdate {
+        target_cell: cell_state.id,
+        value: movement,
         action: Action::ADD,
     }
 }
@@ -99,14 +118,20 @@ mod tests {
                 },
             ],
         };
-        let processes = vec![Process {
-            id: 0,
-            func: Box::new(example_process),
-        }];
+        let processes = vec![
+            Process {
+                id: 0,
+                func: Box::new(example_process),
+            },
+            Process {
+                id: 1,
+                func: Box::new(population_migration),
+            },
+        ];
         let final_state = run_iteration(processes, initial_state);
 
-        assert_eq!(final_state.cells[0].population, 13);
-        assert_eq!(final_state.cells[1].population, 44);
+        assert_eq!(final_state.cells[0].population, 17);
+        assert_eq!(final_state.cells[1].population, 45);
     }
 
     #[test]
@@ -121,7 +146,7 @@ mod tests {
                 id: 1,
             },
         ];
-        let network = get_network_map(cells);
+        let network = get_network_map(&cells);
         assert_eq!(network, vec![vec![1], vec![0]]);
     }
 }
