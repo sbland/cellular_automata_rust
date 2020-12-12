@@ -1,16 +1,18 @@
-pub struct GlobalData {
-    pub iterations: u32,
-}
+/*
+// TODO: implement find closest cells for get neighbours
+// TODO: Allow multiple cell actions from process
 
-pub struct CellState {
-    pub id: u32,
-    pub population: u32,
-}
+*/
 
-pub struct IterationState {
-    pub global_data: GlobalData,
-    pub cells: Vec<CellState>,
-}
+pub mod network;
+pub mod state;
+
+use state::CellState;
+use state::GlobalData;
+use state::IterationState;
+use state::Point;
+
+use network::get_network_map;
 
 pub enum Action {
     ADD,
@@ -33,21 +35,6 @@ fn run_process(cell: &CellState, process: &Process, neighbours: &Vec<&CellState>
     let func = &process.func;
     let cell_update: CellUpdate = func(&cell, &neighbours);
     cell_update
-}
-
-fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<u32>> {
-    let mut network: Vec<Vec<u32>> = Vec::new();
-    for cell in cells.iter() {
-        let mut cell_network: Vec<u32> = Vec::new();
-        for cell_n in cells.iter() {
-            if cell.id != cell_n.id {
-                println!("check network");
-                cell_network.push(cell_n.id);
-            }
-        }
-        network.push(cell_network);
-    }
-    network
 }
 
 pub fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> IterationState {
@@ -79,7 +66,7 @@ pub fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> It
     new_state
 }
 
-pub fn example_process(cell_state: &CellState, neighbours: &Vec<&CellState>) -> CellUpdate {
+pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> CellUpdate {
     CellUpdate {
         target_cell: cell_state.id,
         value: cell_state.population / 10,
@@ -108,14 +95,8 @@ mod tests {
         let initial_state = IterationState {
             global_data: GlobalData { iterations: 0 },
             cells: vec![
-                CellState {
-                    population: 12,
-                    id: 0,
-                },
-                CellState {
-                    population: 40,
-                    id: 1,
-                },
+                CellState::new(0, Point::new(0, 0), 12),
+                CellState::new(1, Point::new(0, 1), 40),
             ],
         };
         let processes = vec![
@@ -137,14 +118,8 @@ mod tests {
     #[test]
     fn returns_a_network() {
         let cells = vec![
-            CellState {
-                population: 12,
-                id: 0,
-            },
-            CellState {
-                population: 40,
-                id: 1,
-            },
+            CellState::new(0, Point::new(0, 0), 12),
+            CellState::new(1, Point::new(0, 1), 40),
         ];
         let network = get_network_map(&cells);
         assert_eq!(network, vec![vec![1], vec![0]]);
