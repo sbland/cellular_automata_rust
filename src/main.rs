@@ -1,5 +1,5 @@
 mod process_runner;
-
+use geo::point;
 use process_runner::example_process;
 use process_runner::population_migration;
 use process_runner::run_iteration;
@@ -8,14 +8,13 @@ use process_runner::Process;
 use process_runner::state::CellState;
 use process_runner::state::GlobalData;
 use process_runner::state::IterationState;
-use process_runner::state::Point;
 
 fn main() {
     let initial_state = IterationState {
         global_data: GlobalData { iterations: 0 },
         cells: vec![
-            CellState::new(0, Point::new(0, 0), 12),
-            CellState::new(1, Point::new(1, 0), 40),
+            CellState::new(0, point!(x:0, y:0), 12),
+            CellState::new(1, point!(x:1, y:0), 40),
         ],
     };
     let processes = vec![

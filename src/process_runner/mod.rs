@@ -10,7 +10,6 @@ pub mod state;
 use state::CellState;
 use state::GlobalData;
 use state::IterationState;
-use state::Point;
 
 use network::get_network_map;
 
@@ -89,14 +88,15 @@ pub fn population_migration(cell_state: &CellState, neighbours: &Vec<&CellState>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use geo::point;
 
     #[test]
     fn test_run_iteration() {
         let initial_state = IterationState {
             global_data: GlobalData { iterations: 0 },
             cells: vec![
-                CellState::new(0, Point::new(0, 0), 12),
-                CellState::new(1, Point::new(0, 1), 40),
+                CellState::new(0, point!(x:0, y:0), 12),
+                CellState::new(1, point!(x:0, y:1), 40),
             ],
         };
         let processes = vec![
@@ -113,15 +113,5 @@ mod tests {
 
         assert_eq!(final_state.cells[0].population, 17);
         assert_eq!(final_state.cells[1].population, 45);
-    }
-
-    #[test]
-    fn returns_a_network() {
-        let cells = vec![
-            CellState::new(0, Point::new(0, 0), 12),
-            CellState::new(1, Point::new(0, 1), 40),
-        ];
-        let network = get_network_map(&cells);
-        assert_eq!(network, vec![vec![1], vec![0]]);
     }
 }
