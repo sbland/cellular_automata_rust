@@ -31,12 +31,16 @@ pub struct Process {
     pub func: Box<dyn Fn(&CellState, &Vec<&CellState>) -> CellUpdate>,
 }
 
-fn run_process(cell: &CellState, process: &Process, neighbours: &Vec<&CellState>) -> CellUpdate {
+fn run_process(
+    cell: &CellState,
+    process: &Process,
+    neighbours: &Vec<&CellState>,
+) -> Vec<CellUpdate> {
     let i = process.id;
     println!("Running process {} on cell {}", i, cell.id);
     let func = &process.func;
     let cell_update: CellUpdate = func(&cell, &neighbours);
-    cell_update
+    vec![cell_update]
 }
 
 pub fn get_next_global_state(global_state: &GlobalData) -> GlobalData {
@@ -60,8 +64,8 @@ fn run_processes(
             .map(|id| &cells[*id as usize])
             .collect::<Vec<_>>();
         for process in processes.iter() {
-            let cell_update = run_process(&cell, &process, &neighbours);
-            cell_updates.push(cell_update);
+            let mut cell_update = run_process(&cell, &process, &neighbours);
+            cell_updates.append(&mut cell_update);
         }
     }
     cell_updates
