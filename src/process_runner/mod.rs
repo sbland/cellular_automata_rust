@@ -1,6 +1,7 @@
 /*
 // TODO: implement find closest cells for get neighbours
 // TODO: Allow multiple cell actions from process
+// TODO: Implement apply actions properly
 
 */
 
@@ -36,32 +37,53 @@ fn run_process(cell: &CellState, process: &Process, neighbours: &Vec<&CellState>
     cell_update
 }
 
-pub fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> IterationState {
-    let mut new_state = input_state;
+pub fn get_next_global_state(global_state: &GlobalData) -> GlobalData {
     let new_global_state = GlobalData {
-        iterations: new_state.global_data.iterations + 1,
+        iterations: global_state.iterations + 1,
     };
+    new_global_state
+}
+
+fn run_processes(
+    cells: &Vec<CellState>,
+    network: Vec<Vec<u32>>,
+    processes: Vec<Process>,
+) -> Vec<CellUpdate> {
     let mut cell_updates: Vec<CellUpdate> = Vec::new();
-    let network: Vec<Vec<u32>> = get_network_map(&new_state.cells);
-    // Run each process on each cell
-    for cell in new_state.cells.iter() {
+    for cell in cells.iter() {
         let cell_id = cell.id as usize;
         let cell_network = &network[cell_id];
         let neighbours = cell_network
             .into_iter()
-            .map(|id| &new_state.cells[*id as usize])
+            .map(|id| &cells[*id as usize])
             .collect::<Vec<_>>();
         for process in processes.iter() {
             let cell_update = run_process(&cell, &process, &neighbours);
             cell_updates.push(cell_update);
         }
     }
-    // Run the resulting actions
+    cell_updates
+}
+
+fn run_cell_updates(cells_in: Vec<CellState>, cell_updates: Vec<CellUpdate>) -> Vec<CellState> {
+    let mut modified_cells = cells_in;
     for cell_action in cell_updates.iter() {
         let id = cell_action.target_cell as usize;
-        new_state.cells[id].population += cell_action.value;
+        modified_cells[id].population += cell_action.value;
     }
-    new_state.global_data = new_global_state;
+    modified_cells
+}
+
+pub fn run_iteration(processes: Vec<Process>, input_state: IterationState) -> IterationState {
+    let mut new_state = input_state;
+    let network: Vec<Vec<u32>> = get_network_map(&new_state.cells);
+    let cell_updates = run_processes(&new_state.cells, network, processes);
+    let updated_cells = run_cell_updates(new_state.cells, cell_updates);
+    let updated_global_data = get_next_global_state(&new_state.global_data);
+
+    // Update state
+    new_state.global_data = updated_global_data;
+    new_state.cells = updated_cells;
     new_state
 }
 
