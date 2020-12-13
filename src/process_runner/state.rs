@@ -1,9 +1,11 @@
 use geo::Point;
 
+#[derive(Clone)]
 pub struct GlobalData {
     pub iterations: u32,
 }
 
+#[derive(Clone)]
 pub struct CellState {
     pub id: u32,
     pub position: Point<f64>,
@@ -20,6 +22,7 @@ impl CellState {
     }
 }
 
+#[derive(Clone)]
 pub struct IterationState {
     pub global_data: GlobalData,
     pub cells: Vec<CellState>,

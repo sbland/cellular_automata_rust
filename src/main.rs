@@ -27,7 +27,7 @@ fn main() {
             func: Box::new(population_migration),
         },
     ];
-    let final_state = run_iteration(processes, initial_state);
+    let final_state = run_iteration(&processes, initial_state);
 
     println!("Cell 0 pop! {}", final_state.cells[0].population);
     println!("Cell 1 pop! {}", final_state.cells[1].population);
