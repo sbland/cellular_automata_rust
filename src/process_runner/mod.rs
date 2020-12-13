@@ -28,7 +28,7 @@ pub struct CellUpdate {
 
 pub struct Process {
     pub id: u32,
-    pub func: Box<dyn Fn(&CellState, &Vec<&CellState>) -> CellUpdate>,
+    pub func: Box<dyn Fn(&CellState, &Vec<&CellState>) -> Vec<CellUpdate>>,
 }
 
 fn run_process(
@@ -39,8 +39,8 @@ fn run_process(
     let i = process.id;
     println!("Running process {} on cell {}", i, cell.id);
     let func = &process.func;
-    let cell_update: CellUpdate = func(&cell, &neighbours);
-    vec![cell_update]
+    let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);
+    cell_updates
 }
 
 pub fn get_next_global_state(global_state: &GlobalData) -> GlobalData {
@@ -93,24 +93,27 @@ pub fn run_iteration(processes: &Vec<Process>, input_state: IterationState) -> I
     new_state
 }
 
-pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> CellUpdate {
-    CellUpdate {
+pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> Vec<CellUpdate> {
+    vec![CellUpdate {
         target_cell: cell_state.id,
         value: cell_state.population / 10,
         action: Action::ADD,
-    }
+    }]
 }
 
-pub fn population_migration(cell_state: &CellState, neighbours: &Vec<&CellState>) -> CellUpdate {
+pub fn population_migration(
+    cell_state: &CellState,
+    neighbours: &Vec<&CellState>,
+) -> Vec<CellUpdate> {
     let mut movement = 0;
     for n in neighbours.iter() {
         movement += n.population / 10;
     }
-    CellUpdate {
+    vec![CellUpdate {
         target_cell: cell_state.id,
         value: movement,
         action: Action::ADD,
-    }
+    }]
 }
 
 #[cfg(test)]
