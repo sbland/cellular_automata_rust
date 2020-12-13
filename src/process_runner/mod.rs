@@ -1,6 +1,4 @@
 /*
-// TODO: implement find closest cells for get neighbours
-// TODO: Allow multiple cell actions from process
 // TODO: Implement apply actions properly
 
 */
@@ -16,7 +14,8 @@ use network::get_network_map;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
-    ADD,
+    ADD, // can also add a neg val
+    SET,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -75,7 +74,10 @@ fn run_cell_updates(cells_in: Vec<CellState>, cell_updates: Vec<CellUpdate>) -> 
     let mut modified_cells = cells_in;
     for cell_action in cell_updates.iter() {
         let id = cell_action.target_cell as usize;
-        modified_cells[id].population += cell_action.value;
+        match cell_action.action {
+            Action::ADD => modified_cells[id].population += cell_action.value,
+            Action::SET => modified_cells[id].population = cell_action.value,
+        }
     }
     modified_cells
 }
@@ -116,6 +118,8 @@ pub fn population_migration(
     }]
 }
 
+/* =============== TESTS =============== */
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,7 +129,7 @@ mod tests {
         vec![
             CellState::new(0, point!(x:5.54, y:-0.19), 12),
             CellState::new(1, point!(x:5.77, y:-0.02), 40),
-            CellState::new(2, point!(x:5.79, y:-0.42), 40),
+            CellState::new(2, point!(x:99.99, y:-0.42), 40),
         ]
     }
 
@@ -139,7 +143,7 @@ mod tests {
             CellUpdate {
                 action: Action::ADD,
                 target_cell: 0,
-                value: 8,
+                value: 4,
             },
             CellUpdate {
                 action: Action::ADD,
@@ -159,21 +163,9 @@ mod tests {
             CellUpdate {
                 action: Action::ADD,
                 target_cell: 2,
-                value: 1,
+                value: 0,
             },
         ]
-        // vec![
-        //     CellUpdate {
-        //         action: Action::ADD,
-        //         value: 99,
-        //         target_cell: 0,
-        //     },
-        //     CellUpdate {
-        //         action: Action::ADD,
-        //         value: 12,
-        //         target_cell: 1,
-        //     },
-        // ]
     }
 
     fn get_demo_processes() -> Vec<Process> {
@@ -190,7 +182,7 @@ mod tests {
     }
 
     fn get_demo_netork() -> Vec<Vec<u32>> {
-        vec![vec![1, 2], vec![0], vec![0]]
+        vec![vec![1], vec![0], vec![]]
     }
 
     #[test]
@@ -200,8 +192,32 @@ mod tests {
         let network = get_demo_netork();
         let updates = run_processes(&cells_in, &network, &processes);
         let expected_updates = get_demo_updates();
-        println!("Updates {:?}", updates);
         assert_eq!(updates.len(), expected_updates.len());
+        assert_eq!(updates, expected_updates);
+    }
+
+    #[test]
+    fn test_run_cell_updates_set() {
+        let cells_in = get_demo_cells();
+        let updates = vec![CellUpdate {
+            action: Action::SET,
+            target_cell: 0,
+            value: 99,
+        }];
+        let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
+        assert_eq!(updated_cells[0].population, 99);
+    }
+
+    #[test]
+    fn test_run_cell_updates_add() {
+        let cells_in = get_demo_cells();
+        let updates = vec![CellUpdate {
+            action: Action::ADD,
+            target_cell: 0,
+            value: 99,
+        }];
+        let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
+        assert_eq!(updated_cells[0].population, 111);
     }
 
     #[test]
@@ -221,11 +237,12 @@ mod tests {
             global_data: GlobalData { iterations: 0 },
             cells: get_demo_cells(),
         };
+
         let processes = get_demo_processes();
         let final_state = run_iteration(&processes, initial_state);
         assert_eq!(final_state.cells.len(), 3);
-        assert_eq!(final_state.cells[0].population, 21);
+        assert_eq!(final_state.cells[0].population, 17);
         assert_eq!(final_state.cells[1].population, 45);
-        assert_eq!(final_state.cells[1].population, 45);
+        assert_eq!(final_state.cells[2].population, 44);
     }
 }
