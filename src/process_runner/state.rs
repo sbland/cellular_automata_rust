@@ -6,12 +6,12 @@ pub struct GlobalData {
 
 pub struct CellState {
     pub id: u32,
-    pub position: Point<u32>,
+    pub position: Point<f64>,
     pub population: u32,
 }
 
 impl CellState {
-    pub fn new(id: u32, pos: Point<u32>, population: u32) -> CellState {
+    pub fn new(id: u32, pos: Point<f64>, population: u32) -> CellState {
         CellState {
             id: id,
             position: pos,
