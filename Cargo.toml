@@ -8,3 +8,11 @@ edition = "2018"
 
 [dependencies]
 geo = "0.16.0"
+
+[lib]
+name = "cellular_automata"
+crate-type = ["cdylib"]
+
+[dependencies.cpython]
+version = "0.5"
+features = ["extension-module"]
