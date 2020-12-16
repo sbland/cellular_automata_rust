@@ -15,10 +15,10 @@ pub fn check_is_neighbour(cell_a: &CellState, cell_b: &CellState) -> bool {
 pub fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<u32>> {
     let mut network: Vec<Vec<u32>> = Vec::new();
     for cell in cells.iter() {
-        println!("Finding neighbours for cell {}", cell.id);
+        // println!("Finding neighbours for cell {}", cell.id);
         let mut cell_network: Vec<u32> = Vec::new();
         for cell_n in cells.iter() {
-            println!("check network");
+            // println!("check network");
             if check_is_neighbour(&cell, &cell_n) {
                 cell_network.push(cell_n.id);
             }
