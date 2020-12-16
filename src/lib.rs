@@ -26,6 +26,16 @@ impl ToPyObject for CellState {
         dict
     }
 }
+impl ToPyObject for GlobalData {
+    type ObjectType = PyDict;
+
+    fn to_py_object(&self, py: Python) -> PyDict {
+        let dict = PyDict::new(py);
+        dict.set_item(py, "iterations", self.iterations).unwrap();
+
+        dict
+    }
+}
 
 fn demo_run() -> String {
     let cells = (0..99)
@@ -60,23 +70,15 @@ fn demo_run() -> String {
 fn run_iteration_i(// cell_data: Vec<CellState>,
     // global_data: GlobalData,
     // network_map: Vec<Vec<u32>>,
-) -> Vec<CellState>
-// (
-//     Vec<CellState>,
-//     // GlobalData,
-//     // Vec<Vec<u32>>
-// )
-{
-    vec![CellState {
+) -> (Vec<CellState>, GlobalData, Vec<Vec<u32>>) {
+    let cell_data = vec![CellState {
         id: 0,
         position: point!(x: 0.0, y: 0.0),
         population: 10,
-    }]
-    // (
-    // cell_data,
-    //     global_data,
-    //     network_map,
-    // )
+    }];
+    let global_data = GlobalData { iterations: 0 };
+    let network_map = vec![vec![0]];
+    (cell_data, global_data, network_map)
 }
 
 fn run_iteration_i_py(
@@ -84,13 +86,7 @@ fn run_iteration_i_py(
     // cell_data: Vec<CellState>,
     // global_data: GlobalData,
     // network_map: Vec<Vec<u32>>,
-) -> PyResult<
-    Vec<CellState>, //     (
-                    //     Vec<CellState>,
-                    //     // GlobalData,
-                    //     // Vec<Vec<u32>>
-                    // )
-> {
+) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
     let out = run_iteration_i();
     // let out = run_iteration_i(cell_data, global_data, network_map);
     Ok(out)
@@ -105,26 +101,26 @@ fn demo_run_py(_: Python) -> PyResult<String> {
 // N.B: names: "rust2py" must be the name of the `.so` or `.pyd` file
 py_module_initializer!(cellular_automata, |py, m| {
     m.add(py, "__doc__", "This module is implemented in Rust.")?;
-    m.add(
-        py,
-        "sum_as_string",
-        py_fn!(py, sum_as_string_py(a: i64, b: i64)),
-    )?;
+    // m.add(
+    //     py,
+    //     "sum_as_string",
+    //     py_fn!(py, sum_as_string_py(a: i64, b: i64)),
+    // )?;
     m.add(py, "demo_run", py_fn!(py, demo_run_py()))?;
     m.add(py, "run_iteration", py_fn!(py, run_iteration_i_py()))?;
     Ok(())
 });
 
-// logic implemented as a normal rust function
-fn sum_as_string(a: i64, b: i64) -> String {
-    format!("{}", a + b).to_string()
-}
+// // logic implemented as a normal rust function
+// fn sum_as_string(a: i64, b: i64) -> String {
+//     format!("{}", a + b).to_string()
+// }
 
-// rust-cpython aware function. All of our python interface could be
-// declared in a separate module.
-// Note that the py_fn!() macro automatically converts the arguments from
-// Python objects to Rust values; and the Rust return value back into a Python object.
-fn sum_as_string_py(_: Python, a: i64, b: i64) -> PyResult<String> {
-    let out = sum_as_string(a, b);
-    Ok(out)
-}
+// // rust-cpython aware function. All of our python interface could be
+// // declared in a separate module.
+// // Note that the py_fn!() macro automatically converts the arguments from
+// // Python objects to Rust values; and the Rust return value back into a Python object.
+// fn sum_as_string_py(_: Python, a: i64, b: i64) -> PyResult<String> {
+//     let out = sum_as_string(a, b);
+//     Ok(out)
+// }
