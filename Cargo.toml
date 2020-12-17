@@ -13,6 +13,6 @@ geo = "0.16.0"
 name = "cellular_automata"
 crate-type = ["cdylib"]
 
-[dependencies.cpython]
-version = "0.5"
+[dependencies.pyo3]
+version = "0.12.4"
 features = ["extension-module"]
