@@ -1,6 +1,7 @@
-// #[macro_use]
-extern crate cpython;
-use cpython::{py_fn, py_module_initializer, PyDict, PyResult, Python, ToPyObject};
+extern crate pyo3;
+use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
+use pyo3::PyObjectProtocol;
 
 mod process_runner;
 use geo::point;
@@ -13,31 +14,53 @@ use process_runner::state::CellState;
 use process_runner::state::GlobalData;
 use process_runner::state::IterationState;
 
-impl ToPyObject for CellState {
-    type ObjectType = PyDict;
-
-    fn to_py_object(&self, py: Python) -> PyDict {
-        let dict = PyDict::new(py);
-        dict.set_item(py, "id", self.id).unwrap();
-        dict.set_item(py, "position", (self.position.x(), self.position.y()))
-            .unwrap();
-        dict.set_item(py, "population", self.population).unwrap();
-
-        dict
-    }
+#[pyclass]
+#[derive(Clone)]
+pub struct CellStatePy {
+    pub inner: CellState,
 }
-impl ToPyObject for GlobalData {
-    type ObjectType = PyDict;
 
-    fn to_py_object(&self, py: Python) -> PyDict {
-        let dict = PyDict::new(py);
-        dict.set_item(py, "iterations", self.iterations).unwrap();
-
-        dict
+#[pymethods]
+impl CellStatePy {
+    #[new]
+    fn new(id: u32, pos: (f64, f64), population: u32) -> Self {
+        CellStatePy {
+            inner: CellState {
+                id,
+                position: point!(x: pos.0, y: pos.1),
+                population,
+            },
+        }
     }
 }
 
-fn demo_run() -> String {
+#[pyproto]
+impl PyObjectProtocol for CellStatePy {
+    fn __str__(&self) -> PyResult<&'static str> {
+        Ok("CellStatePy")
+    }
+
+    fn __repr__<'a>(&'a self) -> PyResult<String> {
+        Ok(format!("CellStateObj id: {}", self.inner.id))
+    }
+
+    fn __getattr__(&'a self, name: &str) -> PyResult<String> {
+        println!("__getattr__ {}", name);
+        let out: String = match name {
+            "a" => format!("hello"),
+            &_ => format!("World"),
+        };
+        Ok(out)
+    }
+}
+
+#[pyclass]
+#[derive(Clone)]
+pub struct GlobalDataPy {
+    pub inner: GlobalData,
+}
+
+fn demo_run() -> Vec<CellState> {
     let cells = (0..99)
         .map(|i| CellState {
             id: i,
@@ -48,10 +71,6 @@ fn demo_run() -> String {
     let initial_state = IterationState {
         global_data: GlobalData { iterations: 0 },
         cells: cells,
-        // cells: vec![
-        //     CellState::new(0, point!(x:5.54, y:-0.19), 12),
-        //     CellState::new(1, point!(x:5.77, y:-0.02), 40),
-        // ],
     };
     let processes = vec![
         Process {
@@ -64,63 +83,54 @@ fn demo_run() -> String {
         },
     ];
     let final_state = run_iteration(&processes, initial_state);
-    format!("Cell 0 population is {}", final_state.cells[0].population).to_string()
+    final_state.cells
 }
 
-fn run_iteration_i(// cell_data: Vec<CellState>,
-    // global_data: GlobalData,
-    // network_map: Vec<Vec<u32>>,
-) -> (Vec<CellState>, GlobalData, Vec<Vec<u32>>) {
-    let cell_data = vec![CellState {
-        id: 0,
-        position: point!(x: 0.0, y: 0.0),
-        population: 10,
-    }];
-    let global_data = GlobalData { iterations: 0 };
-    let network_map = vec![vec![0]];
-    (cell_data, global_data, network_map)
-}
-
-fn run_iteration_i_py(
-    _: Python,
-    // cell_data: Vec<CellState>,
-    // global_data: GlobalData,
-    // network_map: Vec<Vec<u32>>,
-) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
-    let out = run_iteration_i();
-    // let out = run_iteration_i(cell_data, global_data, network_map);
-    Ok(out)
-}
-
-fn demo_run_py(_: Python) -> PyResult<String> {
+#[pyfunction]
+fn demo_run_py() -> PyResult<Vec<CellStatePy>> {
     let out = demo_run();
-    Ok(out)
+    let cellpy = out
+        .iter()
+        .map(|c| CellStatePy {
+            inner: CellState {
+                id: c.id,
+                position: c.position,
+                population: c.population,
+            },
+        })
+        .collect::<Vec<_>>();
+    Ok(cellpy)
 }
 
-// add bindings to the generated python module
-// N.B: names: "rust2py" must be the name of the `.so` or `.pyd` file
-py_module_initializer!(cellular_automata, |py, m| {
-    m.add(py, "__doc__", "This module is implemented in Rust.")?;
-    // m.add(
-    //     py,
-    //     "sum_as_string",
-    //     py_fn!(py, sum_as_string_py(a: i64, b: i64)),
-    // )?;
-    m.add(py, "demo_run", py_fn!(py, demo_run_py()))?;
-    m.add(py, "run_iteration", py_fn!(py, run_iteration_i_py()))?;
-    Ok(())
-});
-
-// // logic implemented as a normal rust function
-// fn sum_as_string(a: i64, b: i64) -> String {
-//     format!("{}", a + b).to_string()
+// fn run_iteration_i(
+//     cell_data: &Vec<CellState>,
+//     // global_data: GlobalData,
+//     // network_map: Vec<Vec<u32>>,
+// ) -> (Vec<CellState>, GlobalData, Vec<Vec<u32>>) {
+//     let global_data = GlobalData { iterations: 0 };
+//     let network_map = vec![vec![0]];
+//     (cell_data.to_vec(), global_data, network_map)
 // }
 
-// // rust-cpython aware function. All of our python interface could be
-// // declared in a separate module.
-// // Note that the py_fn!() macro automatically converts the arguments from
-// // Python objects to Rust values; and the Rust return value back into a Python object.
-// fn sum_as_string_py(_: Python, a: i64, b: i64) -> PyResult<String> {
-//     let out = sum_as_string(a, b);
+// #[pyfunction]
+// fn run_iteration_i_py(
+//     cell: CellStatePy,
+//     // cell_data: Vec<CellStatePy>,
+//     // global_data: GlobalData,
+//     // network_map: Vec<Vec<u32>>,
+// ) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
+//     let cell_data = vec![cell];
+//     let cell_data_inner: &Vec<CellState> = &cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
+//     let out = run_iteration_i(&cell_data_inner);
+//     // let out = run_iteration_i(cell_data, global_data, network_map);
 //     Ok(out)
 // }
+
+#[pymodule]
+fn cellular_automata(py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(demo_run_py, m)?)?;
+    m.add("demo_run", wrap_pyfunction!(demo_run_py, m)?)?;
+    // m.add("run_iteration", wrap_pyfunction!(run_iteration_i_py, m)?)?;
+    m.add_class::<CellStatePy>()?;
+    Ok(())
+}
