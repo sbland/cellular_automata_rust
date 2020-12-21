@@ -1,4 +1,5 @@
 extern crate pyo3;
+use pyo3::callback::IntoPyCallbackOutput;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use pyo3::PyObjectProtocol;
@@ -14,9 +15,16 @@ use process_runner::state::CellState;
 use process_runner::state::GlobalData;
 use process_runner::state::IterationState;
 
+// impl IntoPyCallbackOutput<String> for CellState {
+//     fn convert(self, py: Python) -> PyResult<String> {
+//         Ok(format!("hello"))
+//     }
+// }
+
 #[pyclass]
 #[derive(Clone)]
 pub struct CellStatePy {
+    // #[pyo3(get)]
     pub inner: CellState,
 }
 
@@ -45,7 +53,6 @@ impl PyObjectProtocol for CellStatePy {
     }
 
     fn __getattr__(&'a self, name: &str) -> PyResult<String> {
-        println!("__getattr__ {}", name);
         let out: String = match name {
             "a" => format!("hello"),
             &_ => format!("World"),
@@ -91,13 +98,7 @@ fn demo_run_py() -> PyResult<Vec<CellStatePy>> {
     let out = demo_run();
     let cellpy = out
         .iter()
-        .map(|c| CellStatePy {
-            inner: CellState {
-                id: c.id,
-                position: c.position,
-                population: c.population,
-            },
-        })
+        .map(|c| CellStatePy { inner: *c })
         .collect::<Vec<_>>();
     Ok(cellpy)
 }
@@ -114,16 +115,18 @@ fn demo_run_py() -> PyResult<Vec<CellStatePy>> {
 
 // #[pyfunction]
 // fn run_iteration_i_py(
-//     cell: CellStatePy,
-//     // cell_data: Vec<CellStatePy>,
+//     // cell: CellStatePy,
+//     cell_data: Vec<CellStatePy>,
 //     // global_data: GlobalData,
 //     // network_map: Vec<Vec<u32>>,
+//     // ) -> PyResult<Vec<CellStatePy>> {
 // ) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
-//     let cell_data = vec![cell];
-//     let cell_data_inner: &Vec<CellState> = &cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
-//     let out = run_iteration_i(&cell_data_inner);
+//     Ok(cell_data)
+//     // let cell_data: Vec<CellStatePy> = vec![];
+//     // let cell_data_inner: Vec<CellState> = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
+//     // let out = run_iteration_i(&cell_data_inner);
 //     // let out = run_iteration_i(cell_data, global_data, network_map);
-//     Ok(out)
+//     // Ok(out)
 // }
 
 #[pymodule]
