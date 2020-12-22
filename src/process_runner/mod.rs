@@ -24,9 +24,17 @@ pub struct CellUpdate {
     pub value: u32, // could be int or float
 }
 
+type ProcessFuncT = Box<dyn Fn(&CellState, &Vec<&CellState>) -> Vec<CellUpdate>>;
+
 pub struct Process {
     pub id: u32,
-    pub func: Box<dyn Fn(&CellState, &Vec<&CellState>) -> Vec<CellUpdate>>,
+    pub func: ProcessFuncT,
+}
+
+impl Process {
+    pub fn new(id: u32, func: ProcessFuncT) -> Process {
+        Process { id: id, func: func }
+    }
 }
 
 fn run_process(
@@ -35,7 +43,7 @@ fn run_process(
     neighbours: &Vec<&CellState>,
 ) -> Vec<CellUpdate> {
     let i = process.id;
-    println!("Running process {} on cell {}", i, cell.id);
+    // println!("Running process {} on cell {}", i, cell.id);
     let func = &process.func;
     let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);
     cell_updates

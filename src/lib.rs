@@ -76,14 +76,8 @@ fn run_iteration_py(
         cells: cell_data_inner,
     };
     let processes = vec![
-        Process {
-            id: 0,
-            func: Box::new(example_process),
-        },
-        Process {
-            id: 1,
-            func: Box::new(population_migration),
-        },
+        Process::new(0, Box::new(example_process)),
+        Process::new(1, Box::new(population_migration)),
     ];
     let final_state = run_iteration(&processes, initial_state);
     let cell_data_outer: Vec<CellStatePy> = final_state
@@ -96,8 +90,6 @@ fn run_iteration_py(
 
 #[pymodule]
 fn cellular_automata(py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(demo_run_py, m)?)?;
-    m.add("demo_run", wrap_pyfunction!(demo_run_py, m)?)?;
     m.add("run_iteration", wrap_pyfunction!(run_iteration_py, m)?)?;
     m.add_class::<CellStatePy>()?;
     Ok(())
