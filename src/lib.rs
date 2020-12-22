@@ -1,5 +1,4 @@
 extern crate pyo3;
-use pyo3::callback::IntoPyCallbackOutput;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use pyo3::PyObjectProtocol;
@@ -14,12 +13,6 @@ use process_runner::Process;
 use process_runner::state::CellState;
 use process_runner::state::GlobalData;
 use process_runner::state::IterationState;
-
-// impl IntoPyCallbackOutput<String> for CellState {
-//     fn convert(self, py: Python) -> PyResult<String> {
-//         Ok(format!("hello"))
-//     }
-// }
 
 #[pyclass]
 #[derive(Clone)]
@@ -68,18 +61,19 @@ pub struct GlobalDataPy {
     pub inner: GlobalData,
 }
 
-fn demo_run() -> Vec<CellState> {
-    let cells = (0..99)
-        .map(|i| CellState {
-            id: i,
-            position: point!(x: 0.0, y: i as f64/100.0),
-            population: 5,
-        })
-        .collect::<Vec<_>>();
-
+#[pyfunction]
+fn run_iteration_py(
+    // cell: CellStatePy,
+    cell_data: Vec<CellStatePy>,
+    // global_data: GlobalData,
+    // network_map: Vec<Vec<u32>>,
+    // ) -> PyResult<Vec<CellStatePy>> {
+) -> PyResult<Vec<CellStatePy>> {
+    // ) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
+    let cell_data_inner: Vec<CellState> = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
     let initial_state = IterationState {
         global_data: GlobalData { iterations: 0 },
-        cells: cells,
+        cells: cell_data_inner,
     };
     let processes = vec![
         Process {
@@ -92,50 +86,19 @@ fn demo_run() -> Vec<CellState> {
         },
     ];
     let final_state = run_iteration(&processes, initial_state);
-    final_state.cells
-}
-
-#[pyfunction]
-fn demo_run_py() -> PyResult<Vec<CellStatePy>> {
-    let out = demo_run();
-    let cellpy = out
+    let cell_data_outer: Vec<CellStatePy> = final_state
+        .cells
         .iter()
         .map(|c| CellStatePy { inner: *c })
         .collect::<Vec<_>>();
-    Ok(cellpy)
-}
-
-fn run_iteration_i(
-    cell_data: &Vec<CellState>,
-    // global_data: GlobalData,
-    // network_map: Vec<Vec<u32>>,
-) -> (Vec<CellState>, GlobalData, Vec<Vec<u32>>) {
-    let global_data = GlobalData { iterations: 0 };
-    let network_map = vec![vec![0]];
-    (cell_data.to_vec(), global_data, network_map)
-}
-
-#[pyfunction]
-fn run_iteration_i_py(
-    // cell: CellStatePy,
-    cell_data: Vec<CellStatePy>,
-    // global_data: GlobalData,
-    // network_map: Vec<Vec<u32>>,
-    // ) -> PyResult<Vec<CellStatePy>> {
-) -> PyResult<Vec<CellStatePy>> {
-    // ) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
-    // let cell_data: Vec<CellStatePy> = vec![];
-    // let cell_data_inner: Vec<CellState> = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
-    // let out = run_iteration_i(&cell_data_inner);
-    // let out = run_iteration_i(cell_data, global_data, network_map);
-    Ok(cell_data)
+    Ok(cell_data_outer)
 }
 
 #[pymodule]
 fn cellular_automata(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(demo_run_py, m)?)?;
     m.add("demo_run", wrap_pyfunction!(demo_run_py, m)?)?;
-    m.add("run_iteration", wrap_pyfunction!(run_iteration_i_py, m)?)?;
+    m.add("run_iteration", wrap_pyfunction!(run_iteration_py, m)?)?;
     m.add_class::<CellStatePy>()?;
     Ok(())
 }
