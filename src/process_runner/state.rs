@@ -5,7 +5,7 @@ pub struct GlobalData {
     pub iterations: u32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct CellState {
     pub id: u32,
     pub position: Point<f64>,
