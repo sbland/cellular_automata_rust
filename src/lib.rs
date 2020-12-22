@@ -55,6 +55,7 @@ impl PyObjectProtocol for CellStatePy {
     fn __getattr__(&'a self, name: &str) -> PyResult<String> {
         let out: String = match name {
             "a" => format!("hello"),
+            "population" => format!("{}", self.inner.population),
             &_ => format!("World"),
         };
         Ok(out)
@@ -75,6 +76,7 @@ fn demo_run() -> Vec<CellState> {
             population: 5,
         })
         .collect::<Vec<_>>();
+
     let initial_state = IterationState {
         global_data: GlobalData { iterations: 0 },
         cells: cells,
@@ -103,37 +105,37 @@ fn demo_run_py() -> PyResult<Vec<CellStatePy>> {
     Ok(cellpy)
 }
 
-// fn run_iteration_i(
-//     cell_data: &Vec<CellState>,
-//     // global_data: GlobalData,
-//     // network_map: Vec<Vec<u32>>,
-// ) -> (Vec<CellState>, GlobalData, Vec<Vec<u32>>) {
-//     let global_data = GlobalData { iterations: 0 };
-//     let network_map = vec![vec![0]];
-//     (cell_data.to_vec(), global_data, network_map)
-// }
+fn run_iteration_i(
+    cell_data: &Vec<CellState>,
+    // global_data: GlobalData,
+    // network_map: Vec<Vec<u32>>,
+) -> (Vec<CellState>, GlobalData, Vec<Vec<u32>>) {
+    let global_data = GlobalData { iterations: 0 };
+    let network_map = vec![vec![0]];
+    (cell_data.to_vec(), global_data, network_map)
+}
 
-// #[pyfunction]
-// fn run_iteration_i_py(
-//     // cell: CellStatePy,
-//     cell_data: Vec<CellStatePy>,
-//     // global_data: GlobalData,
-//     // network_map: Vec<Vec<u32>>,
-//     // ) -> PyResult<Vec<CellStatePy>> {
-// ) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
-//     Ok(cell_data)
-//     // let cell_data: Vec<CellStatePy> = vec![];
-//     // let cell_data_inner: Vec<CellState> = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
-//     // let out = run_iteration_i(&cell_data_inner);
-//     // let out = run_iteration_i(cell_data, global_data, network_map);
-//     // Ok(out)
-// }
+#[pyfunction]
+fn run_iteration_i_py(
+    // cell: CellStatePy,
+    cell_data: Vec<CellStatePy>,
+    // global_data: GlobalData,
+    // network_map: Vec<Vec<u32>>,
+    // ) -> PyResult<Vec<CellStatePy>> {
+) -> PyResult<Vec<CellStatePy>> {
+    // ) -> PyResult<(Vec<CellState>, GlobalData, Vec<Vec<u32>>)> {
+    // let cell_data: Vec<CellStatePy> = vec![];
+    // let cell_data_inner: Vec<CellState> = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
+    // let out = run_iteration_i(&cell_data_inner);
+    // let out = run_iteration_i(cell_data, global_data, network_map);
+    Ok(cell_data)
+}
 
 #[pymodule]
 fn cellular_automata(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(demo_run_py, m)?)?;
     m.add("demo_run", wrap_pyfunction!(demo_run_py, m)?)?;
-    // m.add("run_iteration", wrap_pyfunction!(run_iteration_i_py, m)?)?;
+    m.add("run_iteration", wrap_pyfunction!(run_iteration_i_py, m)?)?;
     m.add_class::<CellStatePy>()?;
     Ok(())
 }
