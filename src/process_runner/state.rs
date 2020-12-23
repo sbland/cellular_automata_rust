@@ -12,6 +12,7 @@ pub struct CellState {
     pub population: u32,
 }
 
+#[allow(dead_code)]
 impl CellState {
     pub fn new(id: u32, pos: Point<f64>, population: u32) -> CellState {
         CellState {

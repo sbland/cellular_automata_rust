@@ -32,6 +32,7 @@ pub struct Process {
     pub func: ProcessFuncT,
 }
 
+#[allow(dead_code)]
 impl Process {
     pub fn new(id: u32, func: ProcessFuncT) -> Process {
         Process { id: id, func: func }
