@@ -11,7 +11,7 @@ use process_runner::run_iteration;
 use process_runner::Process;
 
 use process_runner::state::CellState;
-use process_runner::state::GlobalData;
+use process_runner::state::GlobalState;
 use process_runner::state::IterationState;
 
 fn main() {
@@ -23,7 +23,7 @@ fn main() {
         })
         .collect::<Vec<_>>();
     let initial_state = IterationState {
-        global_data: GlobalData { iterations: 0 },
+        global_data: GlobalState { iterations: 0 },
         cells: cells,
         // cells: vec![
         //     CellState::new(0, point!(x:5.54, y:-0.19), 12),

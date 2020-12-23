@@ -6,11 +6,12 @@ pub mod network;
 pub mod state;
 
 use state::CellState;
-use state::GlobalData;
+use state::GlobalState;
 use state::IterationState;
 
 use network::get_network_map;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
     ADD, // can also add a neg val
@@ -42,15 +43,15 @@ fn run_process(
     process: &Process,
     neighbours: &Vec<&CellState>,
 ) -> Vec<CellUpdate> {
-    let i = process.id;
+    // let i = process.id;
     // println!("Running process {} on cell {}", i, cell.id);
     let func = &process.func;
     let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);
     cell_updates
 }
 
-pub fn get_next_global_state(global_state: &GlobalData) -> GlobalData {
-    let new_global_state = GlobalData {
+pub fn get_next_global_state(global_state: &GlobalState) -> GlobalState {
+    let new_global_state = GlobalState {
         iterations: global_state.iterations + 1,
     };
     new_global_state
@@ -241,7 +242,7 @@ mod tests {
     #[test]
     fn test_run_iteration() {
         let initial_state = IterationState {
-            global_data: GlobalData { iterations: 0 },
+            global_data: GlobalState { iterations: 0 },
             cells: get_demo_cells(),
         };
 

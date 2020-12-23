@@ -1,7 +1,7 @@
 use geo::Point;
 
 #[derive(Clone)]
-pub struct GlobalData {
+pub struct GlobalState {
     pub iterations: u32,
 }
 
@@ -24,6 +24,6 @@ impl CellState {
 
 #[derive(Clone)]
 pub struct IterationState {
-    pub global_data: GlobalData,
+    pub global_data: GlobalState,
     pub cells: Vec<CellState>,
 }

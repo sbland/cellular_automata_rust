@@ -10,7 +10,7 @@ use pyo3::prelude::*;
 use pyo3::PyObjectProtocol;
 
 use crate::process_runner::state::CellState;
-use crate::process_runner::state::GlobalData;
+use crate::process_runner::state::GlobalState;
 // use crate::process_runner::state::IterationState;
 
 use geo::point;
@@ -57,6 +57,6 @@ impl PyObjectProtocol for CellStatePy {
 
 #[pyclass]
 #[derive(Clone)]
-pub struct GlobalDataPy {
-    pub inner: GlobalData,
+pub struct GlobalStatePy {
+    pub inner: GlobalState,
 }
