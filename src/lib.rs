@@ -8,24 +8,26 @@ mod py_interface;
 use process_runner::example_process;
 use process_runner::population_migration;
 use process_runner::run_iteration;
-use process_runner::state::GlobalState;
 use process_runner::state::IterationState;
 use process_runner::Process;
 
 use py_interface::CellStatePy;
+use py_interface::GlobalStatePy;
 
+//// A wrapper interface for the run_iteration function
+///
+/// This wraps the run_iteration function.
 #[pyfunction]
 fn run_iteration_py(
-    // cell: CellStatePy,
     cell_data: Vec<CellStatePy>,
-    // global_data: GlobalState,
+    global_data: GlobalStatePy,
     // network_map: Vec<Vec<u32>>,
     // ) -> PyResult<Vec<CellStatePy>> {
 ) -> PyResult<Vec<CellStatePy>> {
     // ) -> PyResult<(Vec<CellState>, GlobalState, Vec<Vec<u32>>)> {
     let cell_data_inner = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
     let initial_state = IterationState {
-        global_data: GlobalState { iterations: 0 },
+        global_data: global_data.inner,
         cells: cell_data_inner,
     };
     let processes = vec![
@@ -45,5 +47,6 @@ fn run_iteration_py(
 fn cellular_automata(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add("run_iteration", wrap_pyfunction!(run_iteration_py, m)?)?;
     m.add_class::<CellStatePy>()?;
+    m.add_class::<GlobalStatePy>()?;
     Ok(())
 }

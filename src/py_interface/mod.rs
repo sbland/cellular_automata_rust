@@ -60,3 +60,13 @@ impl PyObjectProtocol for CellStatePy {
 pub struct GlobalStatePy {
     pub inner: GlobalState,
 }
+
+#[pymethods]
+impl GlobalStatePy {
+    #[new]
+    pub fn new() -> Self {
+        GlobalStatePy {
+            inner: GlobalState { iterations: 0 },
+        }
+    }
+}
