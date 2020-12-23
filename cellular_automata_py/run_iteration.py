@@ -1,4 +1,4 @@
-from cellular_automata import run_iteration, CellStatePy, GlobalStatePy
+from cellular_automata import run, CellStatePy, GlobalStatePy
 
 
 def demo_run():
@@ -11,20 +11,20 @@ def demo_run():
         for i in range(100)]
     global_state = GlobalStatePy()
 
-    cell_data, global_state, network_map = run_iteration(
+    cell_data, global_state, network_map = run.run_iteration(
         initial_cell_data, global_state)
     print('\n----First iteration Output----')
 
-    # print(result)
     population_a = cell_data[0].population
     print("cell_data[0].population:", cell_data[0].population)
     print("type(population_a):  ", type(population_a))
+    print("global_state.iterations", global_state.iterations)
 
     print('\n----Runing Multiple Iterations-----')
     cell_data = initial_cell_data
 
     for i in range(100):
-        cell_data, global_state, network_map = run_iteration(
+        cell_data, global_state, network_map = run.run_iteration(
             cell_data, global_state)
         population_a = cell_data[0].population
     print(population_a)
