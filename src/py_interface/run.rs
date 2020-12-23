@@ -5,11 +5,11 @@ use pyo3::wrap_pyfunction;
 use crate::py_interface::cell_state::CellStatePy;
 use crate::py_interface::global_state::GlobalStatePy;
 
-use crate::process_runner::example_process;
-use crate::process_runner::population_migration;
-use crate::process_runner::run_iteration;
+use crate::process_runner::example_processes::example_process;
+use crate::process_runner::example_processes::population_migration;
+use crate::process_runner::process::Process;
+use crate::process_runner::run::run_iteration;
 use crate::process_runner::state::IterationState;
-use crate::process_runner::Process;
 
 //// A wrapper interface for the run_iteration function
 ///

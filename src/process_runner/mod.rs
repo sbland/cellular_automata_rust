@@ -2,130 +2,11 @@
 TODO: Implement additional processses
 */
 
+pub mod example_processes;
 pub mod network;
+pub mod process;
+pub mod run;
 pub mod state;
-
-use state::CellState;
-use state::GlobalState;
-use state::IterationState;
-
-use network::get_network_map;
-
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq)]
-pub enum Action {
-    ADD, // can also add a neg val
-    SET,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct CellUpdate {
-    pub action: Action,
-    pub target_cell: u32,
-    pub value: u32, // could be int or float
-}
-
-type ProcessFuncT = Box<dyn Fn(&CellState, &Vec<&CellState>) -> Vec<CellUpdate>>;
-
-pub struct Process {
-    pub id: u32,
-    pub func: ProcessFuncT,
-}
-
-#[allow(dead_code)]
-impl Process {
-    pub fn new(id: u32, func: ProcessFuncT) -> Process {
-        Process { id: id, func: func }
-    }
-}
-
-fn run_process(
-    cell: &CellState,
-    process: &Process,
-    neighbours: &Vec<&CellState>,
-) -> Vec<CellUpdate> {
-    // let i = process.id;
-    // println!("Running process {} on cell {}", i, cell.id);
-    let func = &process.func;
-    let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);
-    cell_updates
-}
-
-pub fn get_next_global_state(global_state: &GlobalState) -> GlobalState {
-    let new_global_state = GlobalState {
-        iterations: global_state.iterations + 1,
-    };
-    new_global_state
-}
-
-fn run_processes(
-    cells: &Vec<CellState>,
-    network: &Vec<Vec<u32>>,
-    processes: &Vec<Process>,
-) -> Vec<CellUpdate> {
-    let mut cell_updates: Vec<CellUpdate> = Vec::new();
-    for cell in cells.iter() {
-        let cell_id = cell.id as usize;
-        let cell_network = &network[cell_id];
-        let neighbours = cell_network
-            .into_iter()
-            .map(|id| &cells[*id as usize])
-            .collect::<Vec<_>>();
-        for process in processes.iter() {
-            let mut cell_update = run_process(&cell, &process, &neighbours);
-            cell_updates.append(&mut cell_update);
-        }
-    }
-    cell_updates
-}
-
-fn run_cell_updates(cells_in: Vec<CellState>, cell_updates: Vec<CellUpdate>) -> Vec<CellState> {
-    let mut modified_cells = cells_in;
-    for cell_action in cell_updates.iter() {
-        let id = cell_action.target_cell as usize;
-        match cell_action.action {
-            Action::ADD => modified_cells[id].population += cell_action.value,
-            Action::SET => modified_cells[id].population = cell_action.value,
-        }
-    }
-    modified_cells
-}
-
-pub fn run_iteration(processes: &Vec<Process>, input_state: IterationState) -> IterationState {
-    let mut new_state = input_state;
-    let network: Vec<Vec<u32>> = get_network_map(&new_state.cells);
-    let cell_updates = run_processes(&new_state.cells, &network, &processes);
-    let updated_cells = run_cell_updates(new_state.cells, cell_updates);
-    let updated_global_state = get_next_global_state(&new_state.global_state);
-
-    // Update state
-    new_state.global_state = updated_global_state;
-    new_state.cells = updated_cells;
-    new_state
-}
-
-pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> Vec<CellUpdate> {
-    vec![CellUpdate {
-        target_cell: cell_state.id,
-        value: cell_state.population / 10,
-        action: Action::ADD,
-    }]
-}
-
-pub fn population_migration(
-    cell_state: &CellState,
-    neighbours: &Vec<&CellState>,
-) -> Vec<CellUpdate> {
-    let mut movement = 0;
-    for n in neighbours.iter() {
-        movement += n.population / 10;
-    }
-    vec![CellUpdate {
-        target_cell: cell_state.id,
-        value: movement,
-        action: Action::ADD,
-    }]
-}
 
 /* =============== TESTS =============== */
 
@@ -133,6 +14,21 @@ pub fn population_migration(
 mod tests {
     use super::*;
     use geo::point;
+
+    use process::Action;
+    use process::CellUpdate;
+    use process::Process;
+
+    use example_processes::example_process;
+    use example_processes::population_migration;
+    use run::run_cell_updates;
+    use run::run_iteration;
+    use run::run_processes;
+    use state::CellState;
+    use state::GlobalState;
+    use state::IterationState;
+
+    // use network::get_network_map;
 
     fn get_demo_cells() -> Vec<CellState> {
         vec![

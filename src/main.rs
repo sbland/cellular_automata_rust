@@ -5,10 +5,10 @@
 
 mod process_runner;
 use geo::point;
-use process_runner::example_process;
-use process_runner::population_migration;
-use process_runner::run_iteration;
-use process_runner::Process;
+use process_runner::example_processes::example_process;
+use process_runner::example_processes::population_migration;
+use process_runner::process::Process;
+use process_runner::run::run_iteration;
 
 use process_runner::state::CellState;
 use process_runner::state::GlobalState;
