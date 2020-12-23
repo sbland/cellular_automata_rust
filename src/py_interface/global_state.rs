@@ -2,6 +2,7 @@
 extern crate pyo3;
 
 use pyo3::prelude::*;
+use pyo3::PyObjectProtocol;
 
 use crate::process_runner::state::GlobalState;
 
@@ -24,5 +25,25 @@ impl GlobalStatePy {
 impl GlobalStatePy {
     pub fn inner(input_state: GlobalState) -> Self {
         GlobalStatePy { inner: input_state }
+    }
+}
+
+#[pyproto]
+impl PyObjectProtocol for GlobalStatePy {
+    fn __str__(&self) -> PyResult<&'static str> {
+        Ok("GlobalState")
+    }
+
+    fn __repr__<'a>(&'a self) -> PyResult<String> {
+        Ok(format!("GlobalStateObj"))
+    }
+
+    fn __getattr__(&'a self, name: &str) -> PyResult<String> {
+        let out: String = match name {
+            "iterations" => format!("{}", self.inner.iterations),
+            // TODO: Should return missing attribute error here
+            &_ => format!("INVALID"),
+        };
+        Ok(out)
     }
 }

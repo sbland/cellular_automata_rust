@@ -27,5 +27,6 @@ def demo_run():
         cell_data, global_state, network_map = run.run_iteration(
             cell_data, global_state)
         population_a = cell_data[0].population
-    print(population_a)
+    print("population_a", population_a)
+    print("Iterations: ", global_state.iterations)
     print('Complete')

@@ -46,7 +46,7 @@ impl PyObjectProtocol for CellStatePy {
         let out: String = match name {
             "population" => format!("{}", self.inner.population),
             // TODO: Should return missing attribute error here
-            &_ => format!("World"),
+            &_ => format!("INVALID"),
         };
         Ok(out)
     }
