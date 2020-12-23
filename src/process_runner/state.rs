@@ -24,6 +24,6 @@ impl CellState {
 
 #[derive(Clone)]
 pub struct IterationState {
-    pub global_data: GlobalState,
+    pub global_state: GlobalState,
     pub cells: Vec<CellState>,
 }

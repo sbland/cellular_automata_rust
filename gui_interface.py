@@ -186,10 +186,10 @@ def setup_state(initial_geo_data: FeatureCollection, seed: int = 0):
     # initial_cell_data = generate_random_cells(ids, labels, positions, seed)
     initial_cell_data = []
 
-    initial_global_data = {
+    initial_global_state = {
         'totals': {k: [get_global_sum(initial_cell_data, k)] for k in GLOBAL_PARAMS},
     }
-    return initial_cell_data, initial_global_data
+    return initial_cell_data, initial_global_state
 
 
 def get_config(ui_config, model_config=None, **kwargs) -> Config:
@@ -214,7 +214,7 @@ def action_runner(cell_data: CellState, action_id: str, **kwargs) -> CellState:
 def run_iteration(
     config: Config,
     cell_data: List[CellState],
-    global_data: dict,
+    global_state: dict,
 ) -> Tuple[List[CellState], dict]:
 
     cells_out = cellular_automata.run_iteration(
@@ -224,19 +224,19 @@ def run_iteration(
 
     # TODO: Get all data from run_iteration
 
-    # cells_out, global_data_out, network_map_out = cellular_automata.run_iteration(
+    # cells_out, global_state_out, network_map_out = cellular_automata.run_iteration(
     #     # config,
     #     # processes,
     #     cell_data,
-    #     global_data,
+    #     global_state,
     #     network_map,  # TODO: Implement network map between iterations
     # )
-    # global_data_out['totals'] = {
-    #     k: [*global_data['totals'][k][-20:], get_global_sum(cells_out, k)]
-    #     for k in GLOBAL_PARAMS if k in global_data['totals']}
+    # global_state_out['totals'] = {
+    #     k: [*global_state['totals'][k][-20:], get_global_sum(cells_out, k)]
+    #     for k in GLOBAL_PARAMS if k in global_state['totals']}
 
-    # global_data_out['network_map'] = network_map_out
-    # return cells_out, global_data_out
+    # global_state_out['network_map'] = network_map_out
+    # return cells_out, global_state_out
 
 
 if __name__ == "__main__":

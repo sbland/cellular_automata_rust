@@ -23,7 +23,7 @@ fn main() {
         })
         .collect::<Vec<_>>();
     let initial_state = IterationState {
-        global_data: GlobalState { iterations: 0 },
+        global_state: GlobalState { iterations: 0 },
         cells: cells,
         // cells: vec![
         //     CellState::new(0, point!(x:5.54, y:-0.19), 12),

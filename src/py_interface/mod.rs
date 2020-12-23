@@ -70,3 +70,9 @@ impl GlobalStatePy {
         }
     }
 }
+
+impl GlobalStatePy {
+    pub fn inner(input_state: GlobalState) -> Self {
+        GlobalStatePy { inner: input_state }
+    }
+}

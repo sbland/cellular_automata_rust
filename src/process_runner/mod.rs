@@ -95,10 +95,10 @@ pub fn run_iteration(processes: &Vec<Process>, input_state: IterationState) -> I
     let network: Vec<Vec<u32>> = get_network_map(&new_state.cells);
     let cell_updates = run_processes(&new_state.cells, &network, &processes);
     let updated_cells = run_cell_updates(new_state.cells, cell_updates);
-    let updated_global_data = get_next_global_state(&new_state.global_data);
+    let updated_global_state = get_next_global_state(&new_state.global_state);
 
     // Update state
-    new_state.global_data = updated_global_data;
+    new_state.global_state = updated_global_state;
     new_state.cells = updated_cells;
     new_state
 }
@@ -242,7 +242,7 @@ mod tests {
     #[test]
     fn test_run_iteration() {
         let initial_state = IterationState {
-            global_data: GlobalState { iterations: 0 },
+            global_state: GlobalState { iterations: 0 },
             cells: get_demo_cells(),
         };
 

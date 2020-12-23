@@ -20,27 +20,28 @@ use py_interface::GlobalStatePy;
 #[pyfunction]
 fn run_iteration_py(
     cell_data: Vec<CellStatePy>,
-    global_data: GlobalStatePy,
+    global_state: GlobalStatePy,
     // network_map: Vec<Vec<u32>>,
     // ) -> PyResult<Vec<CellStatePy>> {
-) -> PyResult<Vec<CellStatePy>> {
-    // ) -> PyResult<(Vec<CellState>, GlobalState, Vec<Vec<u32>>)> {
+    // ) -> PyResult<Vec<CellStatePy>> {
+) -> PyResult<(Vec<CellStatePy>, GlobalStatePy, Vec<Vec<u32>>)> {
     let cell_data_inner = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
     let initial_state = IterationState {
-        global_data: global_data.inner,
+        global_state: global_state.inner,
         cells: cell_data_inner,
     };
     let processes = vec![
         Process::new(0, Box::new(example_process)),
         Process::new(1, Box::new(population_migration)),
     ];
-    let final_state = run_iteration(&processes, initial_state);
+    let final_state: IterationState = run_iteration(&processes, initial_state);
     let cell_data_outer: Vec<CellStatePy> = final_state
         .cells
         .iter()
         .map(|c| CellStatePy { inner: *c })
         .collect::<Vec<_>>();
-    Ok(cell_data_outer)
+    let global_state_output = GlobalStatePy::inner(final_state.global_state);
+    Ok((cell_data_outer, global_state_output, vec![vec![1u32]]))
 }
 
 #[pymodule]
