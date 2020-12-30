@@ -5,9 +5,12 @@ pub struct GlobalState {
     pub iterations: u32,
 }
 
+#[derive(Debug, Clone, PartialEq, Copy)]
+pub struct CellIndex(pub u32);
+
 #[derive(Clone, Copy)]
 pub struct CellState {
-    pub id: u32,
+    pub id: CellIndex,
     pub position: Point<f64>,
     pub population: u32,
 }
@@ -16,7 +19,7 @@ pub struct CellState {
 impl CellState {
     pub fn new(id: u32, pos: Point<f64>, population: u32) -> CellState {
         CellState {
-            id: id,
+            id: CellIndex(id),
             position: pos,
             population: population,
         }

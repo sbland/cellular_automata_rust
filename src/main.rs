@@ -10,6 +10,7 @@ use process_runner::example_processes::population_migration;
 use process_runner::process::Process;
 use process_runner::run::run_iteration;
 
+use process_runner::state::CellIndex;
 use process_runner::state::CellState;
 use process_runner::state::GlobalState;
 use process_runner::state::IterationState;
@@ -17,7 +18,7 @@ use process_runner::state::IterationState;
 fn main() {
     let cells = (0..99)
         .map(|i| CellState {
-            id: i,
+            id: CellIndex(i),
             position: point!(x: 0.0, y: i as f64/100.0),
             population: 5,
         })

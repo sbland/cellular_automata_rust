@@ -18,9 +18,8 @@ use crate::process_runner::state::IterationState;
 pub fn run_iteration_py(
     cell_data: Vec<CellStatePy>,
     global_state: GlobalStatePy,
+    // processes: Vec<ProcessPy>,
     // network_map: Vec<Vec<u32>>,
-    // ) -> PyResult<Vec<CellStatePy>> {
-    // ) -> PyResult<Vec<CellStatePy>> {
 ) -> PyResult<(Vec<CellStatePy>, GlobalStatePy, Vec<Vec<u32>>)> {
     let cell_data_inner = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
     let initial_state = IterationState {

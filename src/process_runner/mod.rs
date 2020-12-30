@@ -21,9 +21,11 @@ mod tests {
 
     use example_processes::example_process;
     use example_processes::population_migration;
+    use process::Value;
     use run::run_cell_updates;
     use run::run_iteration;
     use run::run_processes;
+    use state::CellIndex;
     use state::CellState;
     use state::GlobalState;
     use state::IterationState;
@@ -42,33 +44,33 @@ mod tests {
         vec![
             CellUpdate {
                 action: Action::ADD,
-                target_cell: 0,
-                value: 1,
+                target_cell: CellIndex(0),
+                value: Value::NumberI(1),
             },
             CellUpdate {
                 action: Action::ADD,
-                target_cell: 0,
-                value: 4,
+                target_cell: CellIndex(0),
+                value: Value::NumberI(4),
             },
             CellUpdate {
                 action: Action::ADD,
-                target_cell: 1,
-                value: 4,
+                target_cell: CellIndex(1),
+                value: Value::NumberI(4),
             },
             CellUpdate {
                 action: Action::ADD,
-                target_cell: 1,
-                value: 1,
+                target_cell: CellIndex(1),
+                value: Value::NumberI(1),
             },
             CellUpdate {
                 action: Action::ADD,
-                target_cell: 2,
-                value: 4,
+                target_cell: CellIndex(2),
+                value: Value::NumberI(4),
             },
             CellUpdate {
                 action: Action::ADD,
-                target_cell: 2,
-                value: 0,
+                target_cell: CellIndex(2),
+                value: Value::NumberI(0),
             },
         ]
     }
@@ -86,8 +88,8 @@ mod tests {
         ]
     }
 
-    fn get_demo_netork() -> Vec<Vec<u32>> {
-        vec![vec![1], vec![0], vec![]]
+    fn get_demo_netork() -> Vec<Vec<CellIndex>> {
+        vec![vec![CellIndex(1)], vec![CellIndex(0)], vec![]]
     }
 
     #[test]
@@ -106,8 +108,8 @@ mod tests {
         let cells_in = get_demo_cells();
         let updates = vec![CellUpdate {
             action: Action::SET,
-            target_cell: 0,
-            value: 99,
+            target_cell: CellIndex(0),
+            value: Value::NumberI(99),
         }];
         let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
         assert_eq!(updated_cells[0].population, 99);
@@ -118,8 +120,8 @@ mod tests {
         let cells_in = get_demo_cells();
         let updates = vec![CellUpdate {
             action: Action::ADD,
-            target_cell: 0,
-            value: 99,
+            target_cell: CellIndex(0),
+            value: Value::NumberI(99),
         }];
         let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
         assert_eq!(updated_cells[0].population, 111);
@@ -130,10 +132,11 @@ mod tests {
         let cells_in = get_demo_cells();
         let updates = get_demo_updates();
         let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
-        assert_eq!(
-            updated_cells[0].population,
-            cells_in[0].population + updates[0].value + updates[1].value
-        );
+        let mut v: u32 = 0;
+        v += updates[0].value;
+        v += updates[1].value;
+        v += cells_in[0].population;
+        assert_eq!(updated_cells[0].population, v);
     }
 
     #[test]

@@ -1,3 +1,6 @@
+use std::ops;
+
+use crate::process_runner::state::CellIndex;
 use crate::process_runner::state::CellState;
 
 #[allow(dead_code)]
@@ -7,11 +10,45 @@ pub enum Action {
     SET,
 }
 
+#[derive(Debug, Clone, PartialEq, Copy)]
+pub enum Value {
+    NumberF(f64),
+    NumberI(u32),
+}
+
+impl ops::Add<f64> for Value {
+    type Output = f64;
+    fn add(self, rhs: f64) -> f64 {
+        match self {
+            Value::NumberF(v) => v + rhs,
+            Value::NumberI(v) => v as f64 + rhs,
+        }
+    }
+}
+
+impl ops::AddAssign<f64> for Value {
+    fn add_assign(&mut self, rhs: f64) {
+        match self {
+            Value::NumberF(v) => *v += rhs,
+            Value::NumberI(v) => *v += rhs as u32,
+        };
+    }
+}
+
+impl ops::AddAssign<Value> for u32 {
+    fn add_assign(&mut self, rhs: Value) {
+        match rhs {
+            Value::NumberF(v) => *self += v as u32,
+            Value::NumberI(v) => *self += v,
+        };
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct CellUpdate {
     pub action: Action,
-    pub target_cell: u32,
-    pub value: u32, // could be int or float
+    pub target_cell: CellIndex,
+    pub value: Value,
 }
 
 type ProcessFuncT = Box<dyn Fn(&CellState, &Vec<&CellState>) -> Vec<CellUpdate>>;

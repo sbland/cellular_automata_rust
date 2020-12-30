@@ -10,6 +10,7 @@ use geo::point;
 use pyo3::prelude::*;
 use pyo3::PyObjectProtocol;
 
+use crate::process_runner::state::CellIndex;
 use crate::process_runner::state::CellState;
 
 #[pyclass]
@@ -24,7 +25,7 @@ impl CellStatePy {
     pub fn new(id: u32, pos: (f64, f64), population: u32) -> Self {
         CellStatePy {
             inner: CellState {
-                id,
+                id: CellIndex(id),
                 position: point!(x: pos.0, y: pos.1),
                 population,
             },
@@ -39,7 +40,7 @@ impl PyObjectProtocol for CellStatePy {
     }
 
     fn __repr__<'a>(&'a self) -> PyResult<String> {
-        Ok(format!("CellStateObj id: {}", self.inner.id))
+        Ok(format!("CellStateObj id: {:?}", self.inner.id))
     }
 
     fn __getattr__(&'a self, name: &str) -> PyResult<String> {
