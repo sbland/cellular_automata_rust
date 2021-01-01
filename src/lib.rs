@@ -1,8 +1,8 @@
 extern crate pyo3;
 use pyo3::prelude::*;
 
-mod process_runner;
-mod py_interface;
+pub mod process_runner;
+pub mod py_interface;
 
 use py_interface::cell_state::CellStatePy;
 use py_interface::global_state::GlobalStatePy;
