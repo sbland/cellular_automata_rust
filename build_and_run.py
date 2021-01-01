@@ -1,4 +1,5 @@
 import subprocess
+subprocess.check_call(['sh', './scripts/_test_rust.sh'])
 subprocess.check_call(['sh', './scripts/_build_rust.sh'])
 
 
