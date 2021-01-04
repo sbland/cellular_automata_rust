@@ -31,10 +31,10 @@ pub fn default_processes() -> Vec<Process> {
 pub fn run_iteration_wrap(
     cell_data: Vec<CellStatePy>,
     global_state: GlobalStatePy,
-    processes_in: Option<Vec<Process>>,
+    processes_in: impl Into<Option<Vec<Process>>>,
 ) -> PyResult<(Vec<CellStatePy>, GlobalStatePy, Vec<Vec<u32>>)> {
     // 1. Get the processes that are to be used.
-    let processes = processes_in.unwrap_or(default_processes());
+    let processes = processes_in.into().unwrap_or(default_processes());
 
     // 2. Extract the CellState from the CellStatePy wrapper
     let cell_data_inner = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
