@@ -32,11 +32,19 @@ impl Default for CellState {
 
 #[allow(dead_code)]
 impl CellState {
-    pub fn new(id: u32, pos: Point<f64>, population: u32) -> CellState {
+    pub fn new(
+        id: u32,
+        pos: Point<f64>,
+        population: impl Into<Option<u32>>,
+        population_attraction: impl Into<Option<f64>>,
+        residential_capacity: impl Into<Option<u32>>,
+    ) -> CellState {
         CellState {
             id: CellIndex(id),
             position: pos,
-            population: population,
+            population: population.into().unwrap_or(0),
+            population_attraction: population_attraction.into().unwrap_or(1.0),
+            residential_capacity: residential_capacity.into().unwrap_or(0),
             ..Default::default()
         }
     }
@@ -46,4 +54,14 @@ impl CellState {
 pub struct IterationState {
     pub global_state: GlobalState,
     pub cells: Vec<CellState>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_cellstate() {
+        let cell = CellState::new(0, point!(x: 0.0, y: 0.0), 10, None, None);
+    }
 }
