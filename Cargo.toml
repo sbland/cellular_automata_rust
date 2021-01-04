@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 geo = "0.16.0"
+num = "0.3"
 
 [lib]
 name = "cellular_automata"
