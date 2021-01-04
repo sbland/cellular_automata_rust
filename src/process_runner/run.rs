@@ -52,11 +52,12 @@ pub fn run_cell_updates(cells_in: Vec<CellState>, cell_updates: Vec<CellUpdate>)
     for cell_action in cell_updates.iter() {
         let id = cell_action.target_cell.0 as usize;
         match cell_action.action {
+            // TODO: Should get field from cellupdate
             Action::ADD => modified_cells[id].population += cell_action.value,
             Action::SET => {
                 modified_cells[id].population = match cell_action.value {
                     Value::NumberF(v) => v as u32,
-                    Value::NumberI(v) => v,
+                    Value::NumberI(v) => v as u32,
                 }
             }
         }
