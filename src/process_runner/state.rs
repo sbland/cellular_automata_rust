@@ -1,3 +1,4 @@
+use geo::point;
 use geo::Point;
 
 #[derive(Clone)]
@@ -13,6 +14,20 @@ pub struct CellState {
     pub id: CellIndex,
     pub position: Point<f64>,
     pub population: u32,
+    pub population_attraction: f64,
+    pub residential_capacity: u32,
+}
+
+impl Default for CellState {
+    fn default() -> CellState {
+        CellState {
+            id: CellIndex(0),
+            position: point!(x:0.0, y:0.0),
+            population: 0,
+            population_attraction: 1.0,
+            residential_capacity: 0,
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -22,6 +37,7 @@ impl CellState {
             id: CellIndex(id),
             position: pos,
             population: population,
+            ..Default::default()
         }
     }
 }

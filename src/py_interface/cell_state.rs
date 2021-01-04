@@ -28,6 +28,7 @@ impl CellStatePy {
                 id: CellIndex(id),
                 position: point!(x: pos.0, y: pos.1),
                 population,
+                ..Default::default()
             },
         }
     }
