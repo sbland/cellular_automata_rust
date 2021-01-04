@@ -1,3 +1,5 @@
+use crate::process_runner::process::Action;
+use crate::process_runner::process::CellUpdate;
 use geo::point;
 use geo::Point;
 
@@ -30,6 +32,23 @@ impl Default for CellState {
             residential_capacity: 0,
             population_birth_rate: 1.0,
             population_death_rate: 0.2,
+        }
+    }
+}
+
+impl CellState {
+    pub fn apply(&mut self, cell_action: &CellUpdate) {
+        match cell_action.action {
+            // TODO: implement for all cell fields
+            // TODO: Implement default case
+            Action::ADD => match cell_action.target_field.as_str() {
+                "population" => self.population += cell_action.value,
+                &_ => (),
+            },
+            Action::SET => match cell_action.target_field.as_str() {
+                "population" => self.population = cell_action.value.to::<u32>(),
+                &_ => (),
+            },
         }
     }
 }
