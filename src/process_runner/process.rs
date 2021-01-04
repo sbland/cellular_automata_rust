@@ -79,15 +79,22 @@ impl ops::Add<Value> for u32 {
 pub struct CellUpdate {
     pub action: Action,
     pub target_cell: CellIndex,
+    pub target_field: String,
     pub value: Value,
 }
 
 #[allow(unused)]
 impl CellUpdate {
-    pub fn new(target_cell: CellIndex, value: Value, action: Action) -> CellUpdate {
+    pub fn new(
+        target_cell: CellIndex,
+        value: Value,
+        action: Action,
+        target_field: &str,
+    ) -> CellUpdate {
         CellUpdate {
             action: action,
             target_cell: target_cell,
+            target_field: String::from(target_field),
             value: value,
         }
     }

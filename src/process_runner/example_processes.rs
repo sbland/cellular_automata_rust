@@ -6,6 +6,7 @@ use crate::process_runner::state::CellState;
 pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> Vec<CellUpdate> {
     vec![CellUpdate {
         target_cell: cell_state.id,
+        target_field: String::from("population"),
         value: Value::NumberI((cell_state.population / 10) as i32),
         action: Action::ADD,
     }]
@@ -21,6 +22,7 @@ pub fn population_migration(
     }
     vec![CellUpdate {
         target_cell: cell_state.id,
+        target_field: String::from("population"),
         value: Value::NumberI(movement as i32),
         action: Action::ADD,
     }]

@@ -45,31 +45,37 @@ mod tests {
             CellUpdate {
                 action: Action::ADD,
                 target_cell: CellIndex(0),
+                target_field: String::from("population"),
                 value: Value::NumberI(1),
             },
             CellUpdate {
                 action: Action::ADD,
                 target_cell: CellIndex(0),
+                target_field: String::from("population"),
                 value: Value::NumberI(4),
             },
             CellUpdate {
                 action: Action::ADD,
                 target_cell: CellIndex(1),
+                target_field: String::from("population"),
                 value: Value::NumberI(4),
             },
             CellUpdate {
                 action: Action::ADD,
                 target_cell: CellIndex(1),
+                target_field: String::from("population"),
                 value: Value::NumberI(1),
             },
             CellUpdate {
                 action: Action::ADD,
                 target_cell: CellIndex(2),
+                target_field: String::from("population"),
                 value: Value::NumberI(4),
             },
             CellUpdate {
                 action: Action::ADD,
                 target_cell: CellIndex(2),
+                target_field: String::from("population"),
                 value: Value::NumberI(0),
             },
         ]
@@ -109,6 +115,7 @@ mod tests {
         let updates = vec![CellUpdate {
             action: Action::SET,
             target_cell: CellIndex(0),
+            target_field: String::from("population"),
             value: Value::NumberI(99),
         }];
         let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
@@ -121,6 +128,7 @@ mod tests {
         let updates = vec![CellUpdate {
             action: Action::ADD,
             target_cell: CellIndex(0),
+            target_field: String::from("population"),
             value: Value::NumberI(99),
         }];
         let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());

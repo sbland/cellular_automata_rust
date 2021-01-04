@@ -2,7 +2,6 @@ use crate::process_runner::network::get_network_map;
 use crate::process_runner::process::Action;
 use crate::process_runner::process::CellUpdate;
 use crate::process_runner::process::Process;
-use crate::process_runner::process::Value;
 use crate::process_runner::state::CellIndex;
 use crate::process_runner::state::CellState;
 use crate::process_runner::state::GlobalState;
@@ -52,14 +51,16 @@ pub fn run_cell_updates(cells_in: Vec<CellState>, cell_updates: Vec<CellUpdate>)
     for cell_action in cell_updates.iter() {
         let id = cell_action.target_cell.0 as usize;
         match cell_action.action {
-            // TODO: Should get field from cellupdate
-            Action::ADD => modified_cells[id].population += cell_action.value,
-            Action::SET => {
-                modified_cells[id].population = match cell_action.value {
-                    Value::NumberF(v) => v as u32,
-                    Value::NumberI(v) => v as u32,
-                }
-            }
+            // TODO: implement for all cell fields
+            // TODO: Implement default case
+            Action::ADD => match cell_action.target_field.as_str() {
+                "population" => modified_cells[id].population += cell_action.value,
+                &_ => (),
+            },
+            Action::SET => match cell_action.target_field.as_str() {
+                "population" => modified_cells[id].population = cell_action.value.to::<u32>(),
+                &_ => (),
+            },
         }
     }
     modified_cells
