@@ -36,9 +36,9 @@ mod tests {
     #[test]
     fn returns_a_network() {
         let cells = vec![
-            CellState::new(0, point!(x:5.54, y:-0.19), 12),
-            CellState::new(1, point!(x:5.77, y:-0.02), 40),
-            CellState::new(2, point!(x:5.79, y:-0.42), 40),
+            CellState::new(0, point!(x:5.54, y:-0.19), 12, None, None),
+            CellState::new(1, point!(x:5.77, y:-0.02), 40, None, None),
+            CellState::new(2, point!(x:5.79, y:-0.42), 40, None, None),
         ];
         let network = get_network_map(&cells);
         assert_eq!(

@@ -9,7 +9,7 @@ pub struct GlobalState {
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct CellIndex(pub u32);
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct CellState {
     pub id: CellIndex,
     pub position: Point<f64>,
@@ -63,5 +63,15 @@ mod tests {
     #[test]
     fn test_new_cellstate() {
         let cell = CellState::new(0, point!(x: 0.0, y: 0.0), 10, None, None);
+        assert_eq!(
+            cell,
+            CellState {
+                id: CellIndex(0),
+                position: point!(x: 0.0, y: 0.0),
+                population: 10,
+                population_attraction: 1.0,
+                residential_capacity: 0
+            }
+        );
     }
 }

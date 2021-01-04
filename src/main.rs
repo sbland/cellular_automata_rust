@@ -16,7 +16,7 @@ use process_runner::state::IterationState;
 
 fn main() {
     let cells = (0..99)
-        .map(|i| CellState::new(i, point!(x: 0.0, y: i as f64/100.0), 5))
+        .map(|i| CellState::new(i, point!(x: 0.0, y: i as f64/100.0), 5, None, None))
         .collect::<Vec<_>>();
     let initial_state = IterationState {
         global_state: GlobalState { iterations: 0 },
