@@ -33,8 +33,17 @@ impl From<Value> for i32 {
         }
     }
 }
+impl From<Value> for f64 {
+    fn from(src: Value) -> f64 {
+        match src {
+            Value::NumberF(v) => NumCast::from::<f64>(v).unwrap(),
+            Value::NumberI(v) => NumCast::from::<i32>(v).unwrap(),
+        }
+    }
+}
 
 // TODO: Work out how to implement below to allow boiler plate
+// OR use a macro
 // impl<Z: num::NumCast> From<Value> for Z {
 //     fn from(src: Value) -> Z {
 //         match src {
