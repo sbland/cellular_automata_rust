@@ -37,11 +37,14 @@ impl Default for CellState {
 }
 
 impl CellState {
+    /// Apply CellUpdates to the cell
     pub fn apply(&mut self, cell_action: &CellUpdate) {
         match cell_action.action {
             // TODO: implement for all cell fields
             Action::ADD => match cell_action.target_field.as_str() {
-                "population" => self.population += u32::from(cell_action.value),
+                "population" => {
+                    self.population = (self.population as i32 + i32::from(cell_action.value)) as u32
+                }
                 &_ => (),
             },
             Action::SET => match cell_action.target_field.as_str() {
@@ -105,6 +108,7 @@ pub struct IterationState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::process_runner::process::Value;
 
     #[test]
     fn test_new_cellstate() {
@@ -121,5 +125,23 @@ mod tests {
                 population_death_rate: 0.2,
             }
         );
+    }
+
+    #[test]
+    fn test_cellstate_apply() {
+        let mut cell = CellState::new_default(0);
+        cell.population = 100;
+        let update = CellUpdate::new(CellIndex(0), Value::NumberI(3), Action::ADD, "population");
+        cell.apply(&update);
+        assert_eq!(cell.population, 103);
+    }
+
+    #[test]
+    fn test_cellstate_apply_negative() {
+        let mut cell = CellState::new_default(0);
+        cell.population = 100;
+        let update = CellUpdate::new(CellIndex(0), Value::NumberI(-1), Action::ADD, "population");
+        cell.apply(&update);
+        assert_eq!(cell.population, 99);
     }
 }
