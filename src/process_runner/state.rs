@@ -40,23 +40,24 @@ impl Default for CellState {
 impl CellState {
     /// Apply CellUpdates to the cell
     pub fn apply(&mut self, cell_action: &CellUpdate) {
+        macro_rules! action {
+            ("ADD", $field_name:ident, $type:ty) => {
+                self.$field_name = (self.$field_name as i32 + i32::from(cell_action.value)) as $type
+            };
+            ("SET", $field_name:ident, $type:ty) => {
+                self.$field_name = <$type>::from(cell_action.value)
+            };
+        }
         match cell_action.action {
             // TODO: implement for all cell fields
             Action::ADD => match cell_action.target_field.as_str() {
-                "population" => {
-                    self.population = (self.population as i32 + i32::from(cell_action.value)) as u32
-                }
-                "population_attraction" => {
-                    self.population_attraction =
-                        (self.population_attraction as i32 + i32::from(cell_action.value)) as f64
-                }
+                "population" => action!("ADD", population, u32),
+                "population_attraction" => action!("ADD", population_attraction, f64),
                 &_ => (),
             },
             Action::SET => match cell_action.target_field.as_str() {
-                "population" => self.population = u32::from(cell_action.value),
-                "population_attraction" => {
-                    self.population_attraction = f64::from(cell_action.value)
-                }
+                "population" => action!("SET", population, u32),
+                "population_attraction" => action!("SET", population_attraction, f64),
                 &_ => (),
             },
         }
