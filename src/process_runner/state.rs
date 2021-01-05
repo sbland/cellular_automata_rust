@@ -36,6 +36,7 @@ impl Default for CellState {
     }
 }
 
+// TODO: make this a derive macro
 impl CellState {
     /// Apply CellUpdates to the cell
     pub fn apply(&mut self, cell_action: &CellUpdate) {
@@ -45,10 +46,17 @@ impl CellState {
                 "population" => {
                     self.population = (self.population as i32 + i32::from(cell_action.value)) as u32
                 }
+                "population_attraction" => {
+                    self.population_attraction =
+                        (self.population_attraction as i32 + i32::from(cell_action.value)) as f64
+                }
                 &_ => (),
             },
             Action::SET => match cell_action.target_field.as_str() {
                 "population" => self.population = u32::from(cell_action.value),
+                "population_attraction" => {
+                    self.population_attraction = f64::from(cell_action.value)
+                }
                 &_ => (),
             },
         }
