@@ -22,7 +22,7 @@ mod tests {
     use example_processes::example_process;
     use example_processes::population_migration;
     use process::Value;
-    use run::run_cell_updates;
+    use run::apply_cell_updates;
     use run::run_iteration;
     use run::run_processes;
     use state::CellIndex;
@@ -118,7 +118,7 @@ mod tests {
             target_field: String::from("population"),
             value: Value::NumberI(99),
         }];
-        let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
+        let updated_cells = apply_cell_updates(cells_in.clone(), updates.clone());
         assert_eq!(updated_cells[0].population, 99);
     }
 
@@ -131,7 +131,7 @@ mod tests {
             target_field: String::from("population"),
             value: Value::NumberI(99),
         }];
-        let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
+        let updated_cells = apply_cell_updates(cells_in.clone(), updates.clone());
         assert_eq!(updated_cells[0].population, 111);
     }
 
@@ -139,10 +139,10 @@ mod tests {
     fn test_run_cell_updates() {
         let cells_in = get_demo_cells();
         let updates = get_demo_updates();
-        let updated_cells = run_cell_updates(cells_in.clone(), updates.clone());
+        let updated_cells = apply_cell_updates(cells_in.clone(), updates.clone());
         let mut v: u32 = 0;
-        v += updates[0].value;
-        v += updates[1].value;
+        v += u32::from(updates[0].value);
+        v += u32::from(updates[1].value);
         v += cells_in[0].population;
         assert_eq!(updated_cells[0].population, v);
     }

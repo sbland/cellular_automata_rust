@@ -40,13 +40,12 @@ impl CellState {
     pub fn apply(&mut self, cell_action: &CellUpdate) {
         match cell_action.action {
             // TODO: implement for all cell fields
-            // TODO: Implement default case
             Action::ADD => match cell_action.target_field.as_str() {
-                "population" => self.population += cell_action.value,
+                "population" => self.population += u32::from(cell_action.value),
                 &_ => (),
             },
             Action::SET => match cell_action.target_field.as_str() {
-                "population" => self.population = cell_action.value.to::<u32>(),
+                "population" => self.population = u32::from(cell_action.value),
                 &_ => (),
             },
         }
