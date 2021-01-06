@@ -36,31 +36,51 @@ impl Default for CellState {
     }
 }
 
-// TODO: make this a derive macro
 impl CellState {
     /// Apply CellUpdates to the cell
     pub fn apply(&mut self, cell_action: &CellUpdate) {
         macro_rules! action {
-            ("ADD", $field_name:ident, $type:ty) => {
+            (Action::ADD, $field_name:ident, $type:ty) => {
                 self.$field_name = (self.$field_name as i32 + i32::from(cell_action.value)) as $type
             };
-            ("SET", $field_name:ident, $type:ty) => {
+            (Action::SET, $field_name:ident, $type:ty) => {
                 self.$field_name = <$type>::from(cell_action.value)
             };
         }
-        match cell_action.action {
-            // TODO: implement for all cell fields
-            Action::ADD => match cell_action.target_field.as_str() {
-                "population" => action!("ADD", population, u32),
-                "population_attraction" => action!("ADD", population_attraction, f64),
-                &_ => (),
-            },
-            Action::SET => match cell_action.target_field.as_str() {
-                "population" => action!("SET", population, u32),
-                "population_attraction" => action!("SET", population_attraction, f64),
-                &_ => (),
-            },
+
+        macro_rules! actions {
+            (Action::ADD, [$($field_name:ident, $type:ty), *]) => {
+                match cell_action.target_field.as_str() {
+                    $(stringify!($field_name) => action!(Action::ADD, $field_name, $type)),*,
+                    &_ => (),
+                }
+            };
+            (Action::SET, [$($field_name:ident, $type:ty), *]) => {
+                match cell_action.target_field.as_str() {
+                    $(stringify!($field_name) => action!(Action::SET, $field_name, $type)),*,
+                    &_ => (),
+                }
+            };
         }
+
+        macro_rules! actions_full {
+            ($x: path, [$(($field_name:ident, $type:ty)), *]) => {
+                match $x {
+                    Action::ADD => actions!(Action::ADD, [$($field_name, $type),*]),
+                    Action::SET => actions!(Action::SET, [$($field_name, $type),*]),
+                }
+            };
+        }
+        let action = &cell_action.action;
+        // TODO: implement for all cell fields
+        actions_full!(
+            action,
+            [
+                (population, u32),
+                (population_attraction, f64),
+                (residential_capacity, u32)
+            ]
+        );
     }
 }
 
@@ -143,6 +163,20 @@ mod tests {
         let update = CellUpdate::new(CellIndex(0), Value::NumberI(3), Action::ADD, "population");
         cell.apply(&update);
         assert_eq!(cell.population, 103);
+    }
+
+    #[test]
+    fn test_cellstate_apply_pop_attr() {
+        let mut cell = CellState::new_default(0);
+        cell.population_attraction = 100.0;
+        let update = CellUpdate::new(
+            CellIndex(0),
+            Value::NumberI(3),
+            Action::ADD,
+            "population_attraction",
+        );
+        cell.apply(&update);
+        assert_eq!(cell.population_attraction, 103.0);
     }
 
     #[test]
