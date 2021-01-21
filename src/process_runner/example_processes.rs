@@ -1,0 +1,29 @@
+use crate::process_runner::process::Action;
+use crate::process_runner::process::CellUpdate;
+use crate::process_runner::process::Value;
+use crate::process_runner::state::CellState;
+
+pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> Vec<CellUpdate> {
+    vec![CellUpdate {
+        target_cell: cell_state.id,
+        target_field: String::from("population"),
+        value: Value::NumberI((cell_state.population / 10) as i32),
+        action: Action::ADD,
+    }]
+}
+
+pub fn population_migration(
+    cell_state: &CellState,
+    neighbours: &Vec<&CellState>,
+) -> Vec<CellUpdate> {
+    let mut movement = 0;
+    for n in neighbours.iter() {
+        movement += n.population / 10;
+    }
+    vec![CellUpdate {
+        target_cell: cell_state.id,
+        target_field: String::from("population"),
+        value: Value::NumberI(movement as i32),
+        action: Action::ADD,
+    }]
+}

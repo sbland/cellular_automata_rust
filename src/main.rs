@@ -5,30 +5,32 @@
 
 mod process_runner;
 use geo::point;
-use process_runner::example_process;
-use process_runner::population_migration;
-use process_runner::run_iteration;
-use process_runner::Process;
+use process_runner::example_processes::example_process;
+use process_runner::example_processes::population_migration;
+use process_runner::process::Process;
+use process_runner::run::run_iteration;
 
 use process_runner::state::CellState;
-use process_runner::state::GlobalData;
+use process_runner::state::GlobalState;
 use process_runner::state::IterationState;
 
 fn main() {
     let cells = (0..99)
-        .map(|i| CellState {
-            id: i,
-            position: point!(x: 0.0, y: i as f64/100.0),
-            population: 5,
+        .map(|i| {
+            CellState::new(
+                i,
+                point!(x: 0.0, y: i as f64/100.0),
+                5,
+                None,
+                None,
+                None,
+                None,
+            )
         })
         .collect::<Vec<_>>();
     let initial_state = IterationState {
-        global_data: GlobalData { iterations: 0 },
+        global_state: GlobalState { iterations: 0 },
         cells: cells,
-        // cells: vec![
-        //     CellState::new(0, point!(x:5.54, y:-0.19), 12),
-        //     CellState::new(1, point!(x:5.77, y:-0.02), 40),
-        // ],
     };
     let processes = vec![
         Process {

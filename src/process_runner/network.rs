@@ -1,3 +1,4 @@
+use super::state::CellIndex;
 use super::state::CellState;
 use geo::algorithm::geodesic_distance::GeodesicDistance;
 
@@ -12,13 +13,12 @@ pub fn check_is_neighbour(cell_a: &CellState, cell_b: &CellState) -> bool {
     true
 }
 
-pub fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<u32>> {
-    let mut network: Vec<Vec<u32>> = Vec::new();
+pub fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<CellIndex>> {
+    let mut network: Vec<Vec<CellIndex>> = Vec::new();
     for cell in cells.iter() {
         // println!("Finding neighbours for cell {}", cell.id);
-        let mut cell_network: Vec<u32> = Vec::new();
+        let mut cell_network: Vec<CellIndex> = Vec::new();
         for cell_n in cells.iter() {
-            // println!("check network");
             if check_is_neighbour(&cell, &cell_n) {
                 cell_network.push(cell_n.id);
             }
@@ -36,11 +36,18 @@ mod tests {
     #[test]
     fn returns_a_network() {
         let cells = vec![
-            CellState::new(0, point!(x:5.54, y:-0.19), 12),
-            CellState::new(1, point!(x:5.77, y:-0.02), 40),
-            CellState::new(2, point!(x:5.79, y:-0.42), 40),
+            CellState::new(0, point!(x:5.54, y:-0.19), 12, None, None, None, None),
+            CellState::new(1, point!(x:5.77, y:-0.02), 40, None, None, None, None),
+            CellState::new(2, point!(x:5.79, y:-0.42), 40, None, None, None, None),
         ];
         let network = get_network_map(&cells);
-        assert_eq!(network, vec![vec![1, 2], vec![0], vec![0]]);
+        assert_eq!(
+            network,
+            vec![
+                vec![CellIndex(1), CellIndex(2)],
+                vec![CellIndex(0)],
+                vec![CellIndex(0)]
+            ]
+        );
     }
 }
