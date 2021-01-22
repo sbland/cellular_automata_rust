@@ -1,4 +1,6 @@
 #![warn(clippy::all)]
+#![allow(clippy::ptr_arg)]
+
 extern crate pyo3;
 use pyo3::prelude::*;
 
