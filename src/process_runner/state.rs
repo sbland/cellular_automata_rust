@@ -2,6 +2,7 @@ use crate::process_runner::process::Action;
 use crate::process_runner::process::CellUpdate;
 use geo::point;
 use geo::Point;
+use std::convert::From;
 
 #[derive(Clone)]
 pub struct GlobalState {
@@ -10,6 +11,13 @@ pub struct GlobalState {
 
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct CellIndex(pub u32);
+
+impl Into<String> for CellIndex {
+    fn into(self) -> String {
+        let CellIndex(v) = self;
+        format!("{}", v)
+    }
+}
 
 ///
 ///  #[derive(Debug, Clone, PartialEq, Copy)]
