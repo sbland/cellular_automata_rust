@@ -10,7 +10,7 @@ use crate::process_runner::state::IterationState;
 pub fn run_process<T: CellStateBase>(
     cell: &T,
     process: &Process<T>,
-    neighbours: &[&T], // A list of the neighbours states
+    neighbours: &Vec<&T>, // A list of the neighbours states
 ) -> Vec<CellUpdate> {
     let func = &process.func;
     let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);

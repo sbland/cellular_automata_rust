@@ -119,7 +119,7 @@ mod tests {
             target_field: String::from("population"),
             value: Value::NumberI(99),
         }];
-        let updated_cells = apply_cell_updates(cells_in.clone(), updates.clone());
+        let updated_cells = apply_cell_updates(cells_in, updates);
         assert_eq!(updated_cells[0].population, 99);
     }
 
@@ -132,7 +132,7 @@ mod tests {
             target_field: String::from("population"),
             value: Value::NumberI(99),
         }];
-        let updated_cells = apply_cell_updates(cells_in.clone(), updates.clone());
+        let updated_cells = apply_cell_updates(cells_in, updates);
         assert_eq!(updated_cells[0].population, 111);
     }
 

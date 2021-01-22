@@ -87,7 +87,7 @@ impl CellUpdate {
     }
 }
 
-type ProcessFuncT<T> = Box<dyn Fn(&T, &[&T]) -> Vec<CellUpdate>>;
+type ProcessFuncT<T> = Box<dyn Fn(&T, &Vec<&T>) -> Vec<CellUpdate>>;
 
 pub struct Process<T: CellStateBase> {
     pub id: u32,
