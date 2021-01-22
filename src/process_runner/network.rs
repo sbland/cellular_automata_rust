@@ -7,7 +7,7 @@ pub fn check_is_neighbour<T: CellStateBase>(cell_a: &T, cell_b: &T) -> bool {
         return false;
     }
     let distance = cell_a.position().geodesic_distance(&cell_b.position());
-    if distance > 40000.0 {
+    if distance > 80000.0 {
         return false;
     }
     true
@@ -50,5 +50,18 @@ mod tests {
                 vec![CellIndex(0)]
             ]
         );
+    }
+
+    #[test]
+    fn checks_if_is_neighbour() {
+        let cell_a = CellState::new(0, point!(x:5.54, y:-0.19), 12, None, None, None, None);
+        let cell_b = CellState::new(1, point!(x:5.77, y:-0.02), 40, None, None, None, None);
+        let cell_c = CellState::new(2, point!(x:5.79, y:-0.42), 40, None, None, None, None);
+        let are_neighbours = check_is_neighbour(&cell_a, &cell_b);
+        assert_eq!(are_neighbours, true);
+        let are_neighbours = check_is_neighbour(&cell_a, &cell_c);
+        assert_eq!(are_neighbours, true);
+        let are_neighbours = check_is_neighbour(&cell_b, &cell_c);
+        assert_eq!(are_neighbours, false);
     }
 }
