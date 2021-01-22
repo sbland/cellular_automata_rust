@@ -45,10 +45,13 @@ impl PyObjectProtocol for CellStatePy {
     }
 
     fn __getattr__(&'a self, name: &str) -> PyResult<String> {
+        // TODO: Work out how to return value other than string here
         let out: String = match name {
+            "id" => self.inner.id.into(),
+            "position" => format!("{},{}", self.inner.position.x(), self.inner.position.y()),
             "population" => format!("{}", self.inner.population),
             // TODO: Should return missing attribute error here
-            &_ => format!("INVALID"),
+            &_ => "INVALID FIELD".to_owned(),
         };
         Ok(out)
     }
