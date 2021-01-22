@@ -29,10 +29,18 @@ impl Into<usize> for CellIndex {
     }
 }
 
+impl From<CellIndex> for u32 {
+    fn from(src: CellIndex) -> u32 {
+        let CellIndex(v) = src;
+        v as u32
+    }
+}
+
 #[derive(Clone)]
 pub struct IterationState<T: CellStateBase> {
     pub global_state: GlobalState,
     pub cells: Vec<T>,
+    pub network: Vec<Vec<CellIndex>>,
 }
 
 #[cfg(test)]

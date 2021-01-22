@@ -18,6 +18,7 @@ pub fn run_process<T: CellStateBase>(
 }
 
 /// Update the global state
+#[allow(clippy::let_and_return)]
 pub fn get_next_global_state(global_state: &GlobalState) -> GlobalState {
     let new_global_state = GlobalState {
         iterations: global_state.iterations + 1,
@@ -36,7 +37,7 @@ pub fn run_processes<T: CellStateBase>(
         let cell_id: usize = cell.id().into();
         let cell_network = &network[cell_id];
         let neighbours = cell_network
-            .into_iter()
+            .iter()
             // Note we use tuple struct destructuring here
             .map(|CellIndex(id)| &cells[*id as usize])
             .collect::<Vec<_>>();
@@ -75,5 +76,6 @@ pub fn run_iteration<T: CellStateBase>(
     // Update state
     new_state.global_state = updated_global_state;
     new_state.cells = updated_cells;
+    new_state.network = network;
     new_state
 }

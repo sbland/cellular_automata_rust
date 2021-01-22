@@ -31,6 +31,7 @@ fn main() {
     let initial_state = IterationState {
         global_state: GlobalState { iterations: 0 },
         cells: cells,
+        network: vec![vec![]],
     };
     let processes = vec![
         Process {

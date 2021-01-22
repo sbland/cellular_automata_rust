@@ -10,6 +10,7 @@ use crate::py_interface::global_state::GlobalStatePy;
 use crate::process_runner::example_processes::default_processes;
 use crate::process_runner::process::Process;
 use crate::process_runner::run::run_iteration;
+use crate::process_runner::state::CellIndex;
 use crate::process_runner::state::IterationState;
 
 /// Wrap the run_iteration function so we can perform python object conversions
@@ -36,6 +37,7 @@ pub fn run_iteration_wrap<T: CellStateBase, S: CellStatePyBase<T>>(
     let initial_state = IterationState {
         global_state: global_state.inner,
         cells: cell_data_inner,
+        network: vec![vec![]],
     };
 
     // 4. Run the iteration
@@ -48,9 +50,15 @@ pub fn run_iteration_wrap<T: CellStateBase, S: CellStatePyBase<T>>(
         .map(|c| S::from_inner(c))
         .collect::<Vec<_>>();
 
+    let network_converted: Vec<Vec<u32>> = out_state
+        .network
+        .iter()
+        .map(|c| c.iter().map(|ci: &CellIndex| u32::from(*ci)).collect())
+        .collect::<Vec<Vec<u32>>>();
+
     // 6. Wrap the global state in the GlobalStatePy wrapper
     let global_state_output = GlobalStatePy::inner(out_state.global_state);
-    Ok((cell_data_outer, global_state_output, vec![vec![1u32]]))
+    Ok((cell_data_outer, global_state_output, network_converted))
 }
 
 // TODO: Move these to an example library

@@ -153,6 +153,7 @@ mod tests {
         let initial_state = IterationState {
             global_state: GlobalState { iterations: 0 },
             cells: get_demo_cells(),
+            network: vec![vec![]],
         };
 
         let processes = get_demo_processes();
