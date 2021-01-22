@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 pub mod process_runner;
 pub mod py_interface;
 
-use py_interface::cell_state::CellStatePy;
+use py_interface::examples::CellStatePy;
 use py_interface::global_state::GlobalStatePy;
 use py_interface::run::run_submodule;
 

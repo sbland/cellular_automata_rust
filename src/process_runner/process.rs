@@ -2,7 +2,7 @@ use num::NumCast;
 use std::fmt;
 
 use crate::process_runner::state::CellIndex;
-use crate::process_runner::state::CellState;
+use crate::process_runner::state::CellStateBase;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -79,25 +79,25 @@ impl CellUpdate {
         target_field: &str,
     ) -> CellUpdate {
         CellUpdate {
-            action: action,
-            target_cell: target_cell,
+            action,
+            target_cell,
             target_field: String::from(target_field),
-            value: value,
+            value,
         }
     }
 }
 
-type ProcessFuncT = Box<dyn Fn(&CellState, &Vec<&CellState>) -> Vec<CellUpdate>>;
+type ProcessFuncT<T> = Box<dyn Fn(&T, &[&T]) -> Vec<CellUpdate>>;
 
-pub struct Process {
+pub struct Process<T: CellStateBase> {
     pub id: u32,
-    pub func: ProcessFuncT,
+    pub func: ProcessFuncT<T>,
 }
 
 #[allow(dead_code)]
-impl Process {
-    pub fn new(id: u32, func: ProcessFuncT) -> Process {
-        Process { id: id, func: func }
+impl<T: CellStateBase> Process<T> {
+    pub fn new(id: u32, func: ProcessFuncT<T>) -> Process<T> {
+        Process { id, func }
     }
 }
 

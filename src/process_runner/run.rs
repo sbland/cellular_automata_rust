@@ -2,15 +2,15 @@ use crate::process_runner::network::get_network_map;
 use crate::process_runner::process::CellUpdate;
 use crate::process_runner::process::Process;
 use crate::process_runner::state::CellIndex;
-use crate::process_runner::state::CellState;
+use crate::process_runner::state::CellStateBase;
 use crate::process_runner::state::GlobalState;
 use crate::process_runner::state::IterationState;
 
 /// Run a single process on a single cell
-pub fn run_process(
-    cell: &CellState,
-    process: &Process,
-    neighbours: &Vec<&CellState>,
+pub fn run_process<T: CellStateBase>(
+    cell: &T,
+    process: &Process<T>,
+    neighbours: &[&T], // A list of the neighbours states
 ) -> Vec<CellUpdate> {
     let func = &process.func;
     let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);
@@ -26,14 +26,14 @@ pub fn get_next_global_state(global_state: &GlobalState) -> GlobalState {
 }
 
 /// Run all processes on all cells
-pub fn run_processes(
-    cells: &Vec<CellState>,
+pub fn run_processes<T: CellStateBase>(
+    cells: &Vec<T>,
     network: &Vec<Vec<CellIndex>>,
-    processes: &Vec<Process>,
+    processes: &Vec<Process<T>>,
 ) -> Vec<CellUpdate> {
     let mut cell_updates: Vec<CellUpdate> = Vec::new();
     for cell in cells.iter() {
-        let cell_id = cell.id.0 as usize;
+        let cell_id: usize = cell.id().into();
         let cell_network = &network[cell_id];
         let neighbours = cell_network
             .into_iter()
@@ -41,7 +41,7 @@ pub fn run_processes(
             .map(|CellIndex(id)| &cells[*id as usize])
             .collect::<Vec<_>>();
         for process in processes.iter() {
-            let mut cell_update = run_process(&cell, &process, &neighbours);
+            let mut cell_update = run_process::<T>(&cell, &process, &neighbours);
             cell_updates.append(&mut cell_update);
         }
     }
@@ -49,10 +49,10 @@ pub fn run_processes(
 }
 
 /// Apply all queued cell updates to the cells
-pub fn apply_cell_updates(
-    cells_in: Vec<CellState>,
+pub fn apply_cell_updates<T: CellStateBase>(
+    cells_in: Vec<T>,
     cell_updates: Vec<CellUpdate>,
-) -> Vec<CellState> {
+) -> Vec<T> {
     let mut modified_cells = cells_in;
     for cell_action in cell_updates.iter() {
         let id = cell_action.target_cell.0 as usize;
@@ -62,9 +62,12 @@ pub fn apply_cell_updates(
 }
 
 /// Run a single iteration of the model
-pub fn run_iteration(processes: &Vec<Process>, input_state: IterationState) -> IterationState {
+pub fn run_iteration<T: CellStateBase>(
+    processes: &Vec<Process<T>>,
+    input_state: IterationState<T>,
+) -> IterationState<T> {
     let mut new_state = input_state;
-    let network: Vec<Vec<CellIndex>> = get_network_map(&new_state.cells);
+    let network: Vec<Vec<CellIndex>> = get_network_map::<T>(&new_state.cells);
     let cell_updates = run_processes(&new_state.cells, &network, &processes);
     let updated_cells = apply_cell_updates(new_state.cells, cell_updates);
     let updated_global_state = get_next_global_state(&new_state.global_state);

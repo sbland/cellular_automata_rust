@@ -5,5 +5,6 @@ For the wrapper we implement various methods that enable read and coonstruct
 access from python.
 */
 pub mod cell_state;
+pub mod examples;
 pub mod global_state;
 pub mod run;

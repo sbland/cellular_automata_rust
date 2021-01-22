@@ -3,6 +3,7 @@ TODO: Implement additional processses
 */
 
 pub mod example_processes;
+pub mod example_state;
 pub mod network;
 pub mod process;
 pub mod run;
@@ -21,12 +22,12 @@ mod tests {
 
     use example_processes::example_process;
     use example_processes::population_migration;
+    use example_state::CellState;
     use process::Value;
     use run::apply_cell_updates;
     use run::run_iteration;
     use run::run_processes;
     use state::CellIndex;
-    use state::CellState;
     use state::GlobalState;
     use state::IterationState;
 
@@ -81,7 +82,7 @@ mod tests {
         ]
     }
 
-    fn get_demo_processes() -> Vec<Process> {
+    fn get_demo_processes() -> Vec<Process<CellState>> {
         vec![
             Process {
                 id: 0,

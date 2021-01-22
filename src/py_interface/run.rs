@@ -2,22 +2,15 @@ extern crate pyo3;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
-use crate::py_interface::cell_state::CellStatePy;
+use crate::process_runner::state::CellStateBase;
+use crate::py_interface::cell_state::CellStatePyBase;
+use crate::py_interface::examples::CellStatePy;
 use crate::py_interface::global_state::GlobalStatePy;
 
-use crate::process_runner::example_processes::example_process;
-use crate::process_runner::example_processes::population_migration;
+use crate::process_runner::example_processes::default_processes;
 use crate::process_runner::process::Process;
 use crate::process_runner::run::run_iteration;
 use crate::process_runner::state::IterationState;
-
-// Default example processes
-pub fn default_processes() -> Vec<Process> {
-    vec![
-        Process::new(0, Box::new(example_process)),
-        Process::new(1, Box::new(population_migration)),
-    ]
-}
 
 /// Wrap the run_iteration function so we can perform python object conversions
 ///
@@ -28,16 +21,16 @@ pub fn default_processes() -> Vec<Process> {
 ///
 /// By seperating this from the `run_iteration_py` function we can allow non python arguments
 ///
-pub fn run_iteration_wrap(
-    cell_data: Vec<CellStatePy>,
+pub fn run_iteration_wrap<T: CellStateBase, S: CellStatePyBase<T>>(
+    cell_data: Vec<S>,
     global_state: GlobalStatePy,
-    processes_in: impl Into<Option<Vec<Process>>>,
-) -> PyResult<(Vec<CellStatePy>, GlobalStatePy, Vec<Vec<u32>>)> {
+    processes: Vec<Process<T>>,
+) -> PyResult<(Vec<S>, GlobalStatePy, Vec<Vec<u32>>)> {
     // 1. Get the processes that are to be used.
-    let processes = processes_in.into().unwrap_or(default_processes());
+    // let processes = processes_in.into().unwrap_or(default_processes());
 
     // 2. Extract the CellState from the CellStatePy wrapper
-    let cell_data_inner = cell_data.iter().map(|c| c.inner).collect::<Vec<_>>();
+    let cell_data_inner = cell_data.iter().map(|c| c.get_inner()).collect::<Vec<_>>();
 
     // 3. Setup the full iteration state to pass to the run iteration function
     let initial_state = IterationState {
@@ -46,13 +39,13 @@ pub fn run_iteration_wrap(
     };
 
     // 4. Run the iteration
-    let out_state: IterationState = run_iteration(&processes, initial_state);
+    let out_state: IterationState<T> = run_iteration(&processes, initial_state);
 
     // 5. Wrap the cells state back up in the CellStatePy wrapper
-    let cell_data_outer: Vec<CellStatePy> = out_state
+    let cell_data_outer: Vec<S> = out_state
         .cells
         .iter()
-        .map(|c| CellStatePy { inner: *c })
+        .map(|c| S::from_inner(c))
         .collect::<Vec<_>>();
 
     // 6. Wrap the global state in the GlobalStatePy wrapper
@@ -60,7 +53,11 @@ pub fn run_iteration_wrap(
     Ok((cell_data_outer, global_state_output, vec![vec![1u32]]))
 }
 
+// TODO: Move these to an example library
 /// The python facing run_iteration wrapper function
+///
+/// EXAMPLE IMPLEMENTATION
+/// Replace this in library
 ///
 /// This wraps the run_iteration function for python.
 /// It can only take python arguments and must return a PyResult object.
@@ -71,7 +68,7 @@ pub fn run_iteration_py(
     cell_data: Vec<CellStatePy>,
     global_state: GlobalStatePy,
 ) -> PyResult<(Vec<CellStatePy>, GlobalStatePy, Vec<Vec<u32>>)> {
-    run_iteration_wrap(cell_data, global_state, None)
+    run_iteration_wrap(cell_data, global_state, default_processes())
 }
 
 pub fn run_submodule(py: Python) -> PyResult<&PyModule> {

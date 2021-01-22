@@ -10,7 +10,7 @@ use process_runner::example_processes::population_migration;
 use process_runner::process::Process;
 use process_runner::run::run_iteration;
 
-use process_runner::state::CellState;
+use process_runner::example_state::CellState;
 use process_runner::state::GlobalState;
 use process_runner::state::IterationState;
 

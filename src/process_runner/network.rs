@@ -1,26 +1,26 @@
 use super::state::CellIndex;
-use super::state::CellState;
+use super::state::CellStateBase;
 use geo::algorithm::geodesic_distance::GeodesicDistance;
 
-pub fn check_is_neighbour(cell_a: &CellState, cell_b: &CellState) -> bool {
-    if cell_a.id == cell_b.id {
+pub fn check_is_neighbour<T: CellStateBase>(cell_a: &T, cell_b: &T) -> bool {
+    if cell_a.id() == cell_b.id() {
         return false;
     }
-    let distance = cell_a.position.geodesic_distance(&cell_b.position);
+    let distance = cell_a.position().geodesic_distance(&cell_b.position());
     if distance > 40000.0 {
         return false;
     }
     true
 }
 
-pub fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<CellIndex>> {
+pub fn get_network_map<T: CellStateBase>(cells: &[T]) -> Vec<Vec<CellIndex>> {
     let mut network: Vec<Vec<CellIndex>> = Vec::new();
     for cell in cells.iter() {
         // println!("Finding neighbours for cell {}", cell.id);
         let mut cell_network: Vec<CellIndex> = Vec::new();
         for cell_n in cells.iter() {
-            if check_is_neighbour(&cell, &cell_n) {
-                cell_network.push(cell_n.id);
+            if check_is_neighbour(cell, cell_n) {
+                cell_network.push(cell_n.id());
             }
         }
         network.push(cell_network);
@@ -31,6 +31,7 @@ pub fn get_network_map(cells: &Vec<CellState>) -> Vec<Vec<CellIndex>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::process_runner::example_state::CellState;
     use geo::point;
 
     #[test]
