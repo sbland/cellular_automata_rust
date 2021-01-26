@@ -8,6 +8,7 @@ use crate::process_runner::state::CellStateBase;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
     ADD, // can also add a neg val
+    SUB,
     SET,
 }
 

@@ -56,6 +56,11 @@ macro_rules! action {
     (ismut Action::ADD, $field_name:ident, $type:ty, $Self: ident, $cell_action: ident) => {
         $Self.$field_name = ($Self.$field_name as i32 + i32::from($cell_action.value)) as $type
     };
+    // We have to include SUB so that we can add negative values to unsigned types
+    (ismut Action::SUB, $field_name:ident, $type:ty, $Self: ident, $cell_action: ident) => {
+        $Self.$field_name =
+            ($Self.$field_name as $type - <$type>::from($cell_action.value)) as $type
+    };
     (ismut Action::SET, $field_name:ident, $type:ty, $Self: ident, $cell_action: ident) => {
         $Self.$field_name = <$type>::from($cell_action.value)
     };
@@ -98,6 +103,7 @@ macro_rules! impl_cell_state_apply {
                 match action {
                     // Map each field to each action
                     Action::ADD => map_action_to_fields!((Action::ADD), [$($field_info), *], self, cell_action),
+                    Action::SUB => map_action_to_fields!((Action::SUB), [$($field_info), *], self, cell_action),
                     Action::SET => map_action_to_fields!((Action::SET), [$($field_info), *], self, cell_action),
                 }
             }
