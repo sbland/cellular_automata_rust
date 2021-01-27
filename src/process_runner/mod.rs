@@ -41,7 +41,7 @@ mod tests {
         ]
     }
 
-    fn get_demo_updates() -> Vec<CellUpdate> {
+    fn get_demo_updates<'a>() -> Vec<CellUpdate<'a>> {
         vec![
             CellUpdate {
                 action: Action::ADD,
@@ -82,7 +82,7 @@ mod tests {
         ]
     }
 
-    fn get_demo_processes() -> Vec<Process<CellState>> {
+    fn get_demo_processes<'a>() -> Vec<Process<'a, CellState>> {
         vec![
             Process {
                 id: 0,

@@ -1,3 +1,7 @@
+/// Run Module
+///
+/// 'a lifetime represents a single iteration
+///
 use crate::process_runner::network::get_network_map;
 use crate::process_runner::process::CellUpdate;
 use crate::process_runner::process::Process;
@@ -7,11 +11,11 @@ use crate::process_runner::state::GlobalState;
 use crate::process_runner::state::IterationState;
 
 /// Run a single process on a single cell
-pub fn run_process<T: CellStateBase>(
+pub fn run_process<'a, T: CellStateBase>(
     cell: &T,
-    process: &Process<T>,
+    process: &Process<'a, T>,
     neighbours: &Vec<&T>, // A list of the neighbours states
-) -> Vec<CellUpdate> {
+) -> Vec<CellUpdate<'a>> {
     let func = &process.func;
     let cell_updates: Vec<CellUpdate> = func(&cell, &neighbours);
     cell_updates
@@ -27,11 +31,11 @@ pub fn get_next_global_state(global_state: &GlobalState) -> GlobalState {
 }
 
 /// Run all processes on all cells
-pub fn run_processes<T: CellStateBase>(
+pub fn run_processes<'a, T: CellStateBase>(
     cells: &Vec<T>,
     network: &Vec<Vec<CellIndex>>,
-    processes: &Vec<Process<T>>,
-) -> Vec<CellUpdate> {
+    processes: &Vec<Process<'a, T>>,
+) -> Vec<CellUpdate<'a>> {
     let mut cell_updates: Vec<CellUpdate> = Vec::new();
     for cell in cells.iter() {
         let cell_id: usize = cell.id().into();

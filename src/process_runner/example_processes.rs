@@ -4,7 +4,10 @@ use crate::process_runner::process::CellUpdate;
 use crate::process_runner::process::Process;
 use crate::process_runner::process::Value;
 
-pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) -> Vec<CellUpdate> {
+pub fn example_process<'a>(
+    cell_state: &CellState,
+    _neighbours: &Vec<&CellState>,
+) -> Vec<CellUpdate<'a>> {
     vec![CellUpdate {
         target_cell: cell_state.id,
         target_field: String::from("population"),
@@ -13,10 +16,10 @@ pub fn example_process(cell_state: &CellState, _neighbours: &Vec<&CellState>) ->
     }]
 }
 
-pub fn population_migration(
+pub fn population_migration<'a>(
     cell_state: &CellState,
     neighbours: &Vec<&CellState>,
-) -> Vec<CellUpdate> {
+) -> Vec<CellUpdate<'a>> {
     let mut movement = 0;
     for n in neighbours.iter() {
         movement += n.population / 10;
@@ -31,7 +34,7 @@ pub fn population_migration(
 
 // Default example processes
 #[allow(dead_code)]
-pub fn default_processes() -> Vec<Process<CellState>> {
+pub fn default_processes<'a>() -> Vec<Process<'a, CellState>> {
     vec![
         Process::new(0, Box::new(example_process)),
         Process::new(1, Box::new(population_migration)),
