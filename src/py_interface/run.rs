@@ -37,6 +37,7 @@ pub fn run_iteration_wrap<T: CellStateBase, S: CellStatePyBase<T>>(
     let initial_state = IterationState {
         global_state: global_state.inner,
         cells: cell_data_inner,
+        // TODO: Network currently reset before each iteration then recalculated inside run_iteration
         network: vec![vec![]],
     };
 
