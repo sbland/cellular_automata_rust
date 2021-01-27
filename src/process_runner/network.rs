@@ -39,15 +39,15 @@ mod tests {
         let cells = vec![
             CellState::new(0, point!(x:5.54, y:-0.19), 12, None, None, None, None),
             CellState::new(1, point!(x:5.77, y:-0.02), 40, None, None, None, None),
-            CellState::new(2, point!(x:5.79, y:-0.42), 40, None, None, None, None),
+            CellState::new(2, point!(x:5.94, y:0.42), 40, None, None, None, None),
         ];
         let network = get_network_map(&cells);
         assert_eq!(
             network,
             vec![
-                vec![CellIndex(1), CellIndex(2)],
-                vec![CellIndex(0)],
-                vec![CellIndex(0)]
+                vec![CellIndex(1)],
+                vec![CellIndex(0), CellIndex(2)],
+                vec![CellIndex(1)]
             ]
         );
     }
@@ -56,12 +56,12 @@ mod tests {
     fn checks_if_is_neighbour() {
         let cell_a = CellState::new(0, point!(x:5.54, y:-0.19), 12, None, None, None, None);
         let cell_b = CellState::new(1, point!(x:5.77, y:-0.02), 40, None, None, None, None);
-        let cell_c = CellState::new(2, point!(x:5.79, y:-0.42), 40, None, None, None, None);
+        let cell_c = CellState::new(2, point!(x:5.94, y:0.42), 40, None, None, None, None);
         let are_neighbours = check_is_neighbour(&cell_a, &cell_b);
         assert_eq!(are_neighbours, true);
         let are_neighbours = check_is_neighbour(&cell_a, &cell_c);
-        assert_eq!(are_neighbours, true);
-        let are_neighbours = check_is_neighbour(&cell_b, &cell_c);
         assert_eq!(are_neighbours, false);
+        let are_neighbours = check_is_neighbour(&cell_b, &cell_c);
+        assert_eq!(are_neighbours, true);
     }
 }
