@@ -1,10 +1,7 @@
-use crate::process_runner::process::Action;
-use crate::process_runner::process::CellUpdate;
 use crate::process_runner::state::CellIndex;
 use crate::process_runner::state::CellStateBase;
 use geo::point;
 use geo::Point;
-use std::convert::From;
 
 ///
 ///  #[derive(Debug, Clone, PartialEq, Copy)]
@@ -41,70 +38,6 @@ macro_rules! impl_default {
             fn default() -> $cls {
                 $cls {
                     $($field_name: $default),*
-                }
-            }
-        }
-    };
-}
-
-/// Apply the action to the field
-///
-/// This performs some type conversions and modifies the field
-/// The target field must be mutable
-macro_rules! action {
-    // If Action::ADD then we simply add
-    (ismut Action::ADD, $field_name:ident, $type:ty, $Self: ident, $cell_action: ident) => {
-        $Self.$field_name = ($Self.$field_name as i32 + i32::from($cell_action.value)) as $type
-    };
-    // We have to include SUB so that we can add negative values to unsigned types
-    (ismut Action::SUB, $field_name:ident, $type:ty, $Self: ident, $cell_action: ident) => {
-        $Self.$field_name =
-            ($Self.$field_name as $type - <$type>::from($cell_action.value)) as $type
-    };
-    (ismut Action::SET, $field_name:ident, $type:ty, $Self: ident, $cell_action: ident) => {
-        $Self.$field_name = <$type>::from($cell_action.value)
-    };
-    // (cons $_:stmt) => {
-    //     panic!()
-    // };
-    (cons $_:path, $__:ident, $___:ty, $____: ident, $_____: ident) => {
-        panic!()
-    };
-}
-
-/// Match a field to an action
-///
-/// Example Output:
-/// ```
-/// match cell_action.target_field.as_str() {
-///     "population" => {
-///         self.population = (self.population as i32 + i32::from(cell_action.value)) as u32
-///     }
-///     ...
-///     &_ => (),
-/// }
-/// ```
-macro_rules! map_action_to_fields {
-    ((Action::$action_type: ident), [$(($mut: ident $field_name:ident, $type:ty, $default:expr)),*], $Self: ident, $cell_action: ident) => {
-        match $cell_action.target_field.as_str() {
-            $(stringify!($field_name) => action!($mut Action::$action_type, $field_name, $type, $Self, $cell_action)),*,
-            &_ => (),
-        }
-    };
-}
-
-/// Implement the apply action method
-macro_rules! impl_cell_state_apply {
-    ($cls: ident, [$($field_info:tt) *]) => {
-        impl $cls {
-            /// Apply CellUpdates to the cell
-            pub fn apply(&mut self, cell_action: &CellUpdate) {
-                let action = &cell_action.action;
-                match action {
-                    // Map each field to each action
-                    Action::ADD => map_action_to_fields!((Action::ADD), [$($field_info), *], self, cell_action),
-                    Action::SUB => map_action_to_fields!((Action::SUB), [$($field_info), *], self, cell_action),
-                    Action::SET => map_action_to_fields!((Action::SET), [$($field_info), *], self, cell_action),
                 }
             }
         }
@@ -174,7 +107,6 @@ macro_rules! impl_struct {
     ($cls: ident, [$($field_info:tt),*]) => {
         create_struct!($cls, [$($field_info)*]);
         impl_default!($cls, [$($field_info)*]);
-        impl_cell_state_apply!($cls, [$($field_info)*]);
         impl_cls_funcs!($cls, [$($field_info)*]);
     };
 }
@@ -198,8 +130,5 @@ impl CellStateBase for CellState {
     }
     fn position(&self) -> Point<f64> {
         self.position
-    }
-    fn apply(&mut self, cell_action: &CellUpdate) {
-        self.apply(cell_action)
     }
 }

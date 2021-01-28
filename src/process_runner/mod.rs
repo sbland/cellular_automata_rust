@@ -16,14 +16,12 @@ mod tests {
     use super::*;
     use geo::point;
 
-    use process::Action;
     use process::CellUpdate;
     use process::Process;
 
     use example_processes::example_process;
     use example_processes::population_migration;
     use example_state::CellState;
-    use process::Value;
     use run::apply_cell_updates;
     use run::run_iteration;
     use run::run_processes;
@@ -41,48 +39,46 @@ mod tests {
         ]
     }
 
-    fn get_demo_updates<'a>() -> Vec<CellUpdate<'a>> {
+    macro_rules! action_add_population {
+        ($amount: literal) => {{
+            fn add_population(mut cell_state: CellState) -> CellState {
+                cell_state.population += $amount;
+                cell_state
+            }
+            add_population
+        }};
+    }
+
+    fn get_demo_updates() -> Vec<CellUpdate<CellState>> {
         vec![
-            CellUpdate {
-                action: Action::ADD,
+            CellUpdate::<CellState> {
                 target_cell: CellIndex(0),
-                target_field: String::from("population"),
-                value: Value::NumberI(1),
+                action: Box::new(action_add_population!(1)),
             },
-            CellUpdate {
-                action: Action::ADD,
+            CellUpdate::<CellState> {
                 target_cell: CellIndex(0),
-                target_field: String::from("population"),
-                value: Value::NumberI(4),
+                action: Box::new(action_add_population!(8)),
             },
-            CellUpdate {
-                action: Action::ADD,
+            CellUpdate::<CellState> {
                 target_cell: CellIndex(1),
-                target_field: String::from("population"),
-                value: Value::NumberI(4),
+                action: Box::new(action_add_population!(4)),
             },
-            CellUpdate {
-                action: Action::ADD,
+            CellUpdate::<CellState> {
                 target_cell: CellIndex(1),
-                target_field: String::from("population"),
-                value: Value::NumberI(1),
+                action: Box::new(action_add_population!(1)),
             },
-            CellUpdate {
-                action: Action::ADD,
+            CellUpdate::<CellState> {
                 target_cell: CellIndex(2),
-                target_field: String::from("population"),
-                value: Value::NumberI(4),
+                action: Box::new(action_add_population!(4)),
             },
-            CellUpdate {
-                action: Action::ADD,
+            CellUpdate::<CellState> {
                 target_cell: CellIndex(2),
-                target_field: String::from("population"),
-                value: Value::NumberI(0),
+                action: Box::new(action_add_population!(1)),
             },
         ]
     }
 
-    fn get_demo_processes<'a>() -> Vec<Process<'a, CellState>> {
+    fn get_demo_processes() -> Vec<Process<CellState>> {
         vec![
             Process {
                 id: 0,
@@ -99,6 +95,13 @@ mod tests {
         vec![vec![CellIndex(1)], vec![CellIndex(0)], vec![]]
     }
 
+    impl PartialEq for CellUpdate<CellState> {
+        // TODO: Improve CellUpdate Comparison for test
+        fn eq(&self, other: &Self) -> bool {
+            self.target_cell == other.target_cell
+        }
+    }
+
     #[test]
     fn test_run_processes() {
         let cells_in = get_demo_cells();
@@ -111,26 +114,11 @@ mod tests {
     }
 
     #[test]
-    fn test_run_cell_updates_set() {
-        let cells_in = get_demo_cells();
-        let updates = vec![CellUpdate {
-            action: Action::SET,
-            target_cell: CellIndex(0),
-            target_field: String::from("population"),
-            value: Value::NumberI(99),
-        }];
-        let updated_cells = apply_cell_updates(cells_in, updates);
-        assert_eq!(updated_cells[0].population, 99);
-    }
-
-    #[test]
     fn test_run_cell_updates_add() {
         let cells_in = get_demo_cells();
-        let updates = vec![CellUpdate {
-            action: Action::ADD,
+        let updates = vec![CellUpdate::<CellState> {
             target_cell: CellIndex(0),
-            target_field: String::from("population"),
-            value: Value::NumberI(99),
+            action: Box::new(action_add_population!(99)),
         }];
         let updated_cells = apply_cell_updates(cells_in, updates);
         assert_eq!(updated_cells[0].population, 111);
@@ -140,12 +128,8 @@ mod tests {
     fn test_run_cell_updates() {
         let cells_in = get_demo_cells();
         let updates = get_demo_updates();
-        let updated_cells = apply_cell_updates(cells_in.clone(), updates.clone());
-        let mut v: u32 = 0;
-        v += u32::from(updates[0].value);
-        v += u32::from(updates[1].value);
-        v += cells_in[0].population;
-        assert_eq!(updated_cells[0].population, v);
+        let updated_cells = apply_cell_updates(cells_in, updates);
+        assert_eq!(updated_cells[0].population, 21);
     }
 
     #[test]
@@ -153,14 +137,13 @@ mod tests {
         let initial_state = IterationState {
             global_state: GlobalState { iterations: 0 },
             cells: get_demo_cells(),
-            network: vec![vec![]],
+            network: vec![vec![]], // Note network calculated internally
         };
-
         let processes = get_demo_processes();
         let final_state = run_iteration(&processes, initial_state);
         assert_eq!(final_state.cells.len(), 3);
-        assert_eq!(final_state.cells[0].population, 17);
-        assert_eq!(final_state.cells[1].population, 45);
-        assert_eq!(final_state.cells[2].population, 44);
+        assert_eq!(final_state.cells[0].population, 17); // initially 12
+        assert_eq!(final_state.cells[1].population, 46); // initially 40
+        assert_eq!(final_state.cells[2].population, 44); // initially 40
     }
 }

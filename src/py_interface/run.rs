@@ -22,7 +22,7 @@ use crate::process_runner::state::IterationState;
 ///
 /// By seperating this from the `run_iteration_py` function we can allow non python arguments
 ///
-pub fn run_iteration_wrap<T: CellStateBase, S: CellStatePyBase<T>>(
+pub fn run_iteration_wrap<T: CellStateBase + Copy + std::fmt::Debug, S: CellStatePyBase<T>>(
     cell_data: Vec<S>,
     global_state: GlobalStatePy,
     processes: Vec<Process<T>>,
