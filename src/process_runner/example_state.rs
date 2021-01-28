@@ -14,7 +14,7 @@ use geo::Point;
 ///
 macro_rules! create_struct {
     ($cls: ident, [$(($ismut:ident $field_name:ident, $type:ty, $default:expr))*]) => {
-        #[derive(Debug, Clone, PartialEq, Copy)]
+        #[derive(Debug, Clone, PartialEq)]
         pub struct $cls {
             $(pub $field_name: $type),*
         }
@@ -53,20 +53,13 @@ macro_rules! impl_new {
             id: u32,
             pos: impl Into<Option<Point<f64>>>,
             population: impl Into<Option<u32>>,
-            population_attraction: impl Into<Option<f64>>,
-            residential_capacity: impl Into<Option<u32>>,
-            population_birth_rate: impl Into<Option<f64>>,
-            population_death_rate: impl Into<Option<f64>>,
         ) -> CellState {
             CellState {
                 // $($field_name:$default),
                 id: CellIndex(id),
                 position: pos.into().unwrap_or(point!(x: 0.0, y: 0.0)),
                 population: population.into().unwrap_or(0),
-                population_attraction: population_attraction.into().unwrap_or(1.0),
-                residential_capacity: residential_capacity.into().unwrap_or(0),
-                population_birth_rate: population_birth_rate.into().unwrap_or(1.0),
-                population_death_rate: population_death_rate.into().unwrap_or(0.2),
+                peep_ids: vec![1,2,3],
             }
         }
     };
@@ -117,10 +110,7 @@ impl_struct!(
         (cons id, CellIndex, CellIndex(0)),
         (cons position, Point<f64>, point!(x:0.0, y:0.0)),
         (ismut population, u32, 0),
-        (ismut population_attraction, f64, 1.0),
-        (ismut residential_capacity, u32, 0),
-        (ismut population_birth_rate, f64, 1.0),
-        (ismut population_death_rate, f64, 0.0)
+        (ismut peep_ids, Vec<u32>, vec![])
     ]
 );
 
@@ -130,5 +120,25 @@ impl CellStateBase for CellState {
     }
     fn position(&self) -> Point<f64> {
         self.position
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use geo::point;
+
+    #[test]
+    fn test_new_cellstate() {
+        let cell = CellState::new(0, point!(x: 0.0, y: 0.0), 10);
+        assert_eq!(
+            cell,
+            CellState {
+                id: CellIndex(0),
+                position: point!(x: 0.0, y: 0.0),
+                population: 10,
+                peep_ids: vec![1, 2, 3],
+            }
+        );
     }
 }

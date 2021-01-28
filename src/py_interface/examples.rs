@@ -28,13 +28,16 @@ impl CellStatePy {
     }
 }
 
+// Note: This now includes cloning so we could in theory end up with duplicate clones
 impl CellStatePyBase<CellState> for CellStatePy {
     fn get_inner(&self) -> CellState {
-        self.inner
+        self.inner.clone()
     }
 
     fn from_inner(inner: &CellState) -> Self {
-        CellStatePy { inner: *inner }
+        CellStatePy {
+            inner: inner.clone(),
+        }
     }
 }
 

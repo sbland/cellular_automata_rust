@@ -54,20 +54,20 @@ pub fn run_processes<T: CellStateBase + std::fmt::Debug>(
 }
 
 /// Apply all queued cell updates to the cells
-pub fn apply_cell_updates<T: CellStateBase + Copy>(
+pub fn apply_cell_updates<T: CellStateBase + Clone>(
     cells_in: Vec<T>,
     cell_updates: Vec<CellUpdate<T>>,
 ) -> Vec<T> {
     let mut modified_cells = cells_in;
     for cell_action in cell_updates.iter() {
         let id = cell_action.target_cell.0 as usize;
-        modified_cells[id] = (cell_action.action)(modified_cells[id])
+        modified_cells[id] = (cell_action.action)(modified_cells[id].clone())
     }
     modified_cells
 }
 
 /// Run a single iteration of the model
-pub fn run_iteration<T: CellStateBase + Copy + std::fmt::Debug>(
+pub fn run_iteration<T: CellStateBase + Clone + std::fmt::Debug>(
     processes: &Vec<Process<T>>,
     input_state: IterationState<T>,
 ) -> IterationState<T> {

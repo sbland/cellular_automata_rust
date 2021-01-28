@@ -42,25 +42,4 @@ pub struct IterationState<T: CellStateBase> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::process_runner::example_state::CellState;
-    use geo::point;
-
-    #[test]
-    fn test_new_cellstate() {
-        let cell = CellState::new(0, point!(x: 0.0, y: 0.0), 10, None, None, None, None);
-        assert_eq!(
-            cell,
-            CellState {
-                id: CellIndex(0),
-                position: point!(x: 0.0, y: 0.0),
-                population: 10,
-                population_attraction: 1.0,
-                residential_capacity: 0,
-                population_birth_rate: 1.0,
-                population_death_rate: 0.2,
-            }
-        );
-    }
-}
+mod tests {}
