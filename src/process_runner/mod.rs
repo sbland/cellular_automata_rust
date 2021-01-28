@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_run_cell_updates() {
+    fn test_apply_cell_updates() {
         let cells_in = get_demo_cells();
         let updates = get_demo_updates();
         let updated_cells = apply_cell_updates(cells_in, updates);
