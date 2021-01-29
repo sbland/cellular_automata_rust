@@ -1,4 +1,4 @@
-use crate::process_runner::example_state::CellState;
+use super::example_state::CellState;
 use crate::process_runner::process::CellUpdate;
 use crate::process_runner::process::Process;
 

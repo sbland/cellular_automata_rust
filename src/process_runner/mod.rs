@@ -1,9 +1,4 @@
-/*
-TODO: Implement additional processses
-*/
-
-pub mod example_processes;
-pub mod example_state;
+pub mod examples;
 pub mod network;
 pub mod process;
 pub mod run;
@@ -19,9 +14,9 @@ mod tests {
     use process::CellUpdate;
     use process::Process;
 
-    use example_processes::example_process;
-    use example_processes::population_migration;
-    use example_state::CellState;
+    use examples::example_processes::example_process;
+    use examples::example_processes::population_migration;
+    use examples::example_state::CellState;
     use run::apply_cell_updates;
     use run::run_iteration;
     use run::run_processes;

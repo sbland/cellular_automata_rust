@@ -31,7 +31,7 @@ pub fn get_network_map<T: CellStateBase>(cells: &[T]) -> Vec<Vec<CellIndex>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::process_runner::example_state::CellState;
+    use crate::process_runner::examples::example_state::CellState;
     use geo::point;
 
     #[test]
