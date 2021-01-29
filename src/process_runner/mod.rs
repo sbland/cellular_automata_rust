@@ -88,7 +88,10 @@ mod tests {
         let cells_in = get_demo_cells();
         let cell_processes = default_cell_processes();
         let network = get_demo_netork();
-        let global_state = GlobalState { iterations: 0 };
+        let global_state = GlobalState {
+            iterations: 0,
+            ..Default::default()
+        };
         let updates = run_processes(&cells_in, &network, &cell_processes, &global_state);
         let expected_updates = get_demo_updates();
         assert_eq!(updates.len(), expected_updates.len());
