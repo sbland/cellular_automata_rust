@@ -7,7 +7,7 @@ use pyo3::PyObjectProtocol;
 use crate::process_runner::state::GlobalState;
 
 #[pyclass]
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct GlobalStatePy {
     pub inner: GlobalState,
 }
@@ -35,14 +35,14 @@ impl PyObjectProtocol for GlobalStatePy {
     }
 
     fn __repr__<'a>(&'a self) -> PyResult<String> {
-        Ok(format!("GlobalStateObj"))
+        Ok("GlobalStateObj".to_owned())
     }
 
     fn __getattr__(&'a self, name: &str) -> PyResult<String> {
         let out: String = match name {
             "iterations" => format!("{}", self.inner.iterations),
             // TODO: Should return missing attribute error here
-            &_ => format!("INVALID"),
+            &_ => "INVALID".to_owned(),
         };
         Ok(out)
     }

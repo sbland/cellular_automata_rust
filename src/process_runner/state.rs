@@ -5,7 +5,7 @@ pub trait CellStateBase {
     fn position(&self) -> Point<f64>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct GlobalState {
     pub iterations: u32,
 }
