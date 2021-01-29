@@ -1,3 +1,3 @@
 use std::fmt::Debug;
 
-pub trait GlobalStateBase: Debug + Copy {}
+pub trait GlobalStateBase: Debug {}
