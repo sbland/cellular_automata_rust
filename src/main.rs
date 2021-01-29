@@ -5,13 +5,12 @@
 
 mod process_runner;
 use geo::point;
-use process_runner::example_processes::example_process;
-use process_runner::example_processes::population_migration;
-use process_runner::process::Process;
+use process_runner::examples::example_processes::default_cell_processes;
+use process_runner::examples::example_processes::default_global_processes;
 use process_runner::run::run_iteration;
 
-use process_runner::example_state::CellState;
-use process_runner::state::GlobalState;
+use process_runner::examples::example_state::CellState;
+use process_runner::examples::example_state::GlobalState;
 use process_runner::state::IterationState;
 
 fn main() {
@@ -23,17 +22,9 @@ fn main() {
         cells: cells,
         network: vec![vec![]],
     };
-    let processes = vec![
-        Process {
-            id: 0,
-            func: Box::new(example_process),
-        },
-        Process {
-            id: 1,
-            func: Box::new(population_migration),
-        },
-    ];
-    let final_state = run_iteration(&processes, initial_state);
+    let cell_processes = default_cell_processes();
+    let global_processes = default_global_processes();
+    let final_state = run_iteration(&cell_processes, &global_processes, initial_state);
 
     println!("Cell 0 pop! {}", final_state.cells[0].population);
     println!("Cell 1 pop! {}", final_state.cells[1].population);

@@ -1,5 +1,5 @@
-use super::state::CellIndex;
-use super::state::CellStateBase;
+use super::cells::state::CellIndex;
+use super::cells::state::CellStateBase;
 use geo::algorithm::geodesic_distance::GeodesicDistance;
 
 pub fn check_is_neighbour<T: CellStateBase>(cell_a: &T, cell_b: &T) -> bool {

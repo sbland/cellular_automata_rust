@@ -1,9 +1,10 @@
+pub mod agents;
+pub mod cells;
 pub mod examples;
+pub mod global;
 pub mod network;
-pub mod process;
 pub mod run;
 pub mod state;
-
 /* =============== TESTS =============== */
 
 #[cfg(test)]
@@ -11,17 +12,15 @@ mod tests {
     use super::*;
     use geo::point;
 
-    use process::CellUpdate;
-    use process::Process;
-
-    use examples::example_processes::example_process;
-    use examples::example_processes::population_migration;
+    use cells::run::apply_cell_updates;
+    use cells::run::run_processes;
+    use cells::run::CellUpdate;
+    use cells::state::CellIndex;
+    use examples::example_processes::default_cell_processes;
+    use examples::example_processes::default_global_processes;
     use examples::example_state::CellState;
-    use run::apply_cell_updates;
+    use examples::example_state::GlobalState;
     use run::run_iteration;
-    use run::run_processes;
-    use state::CellIndex;
-    use state::GlobalState;
     use state::IterationState;
 
     // use network::get_network_map;
@@ -73,19 +72,6 @@ mod tests {
         ]
     }
 
-    fn get_demo_processes() -> Vec<Process<CellState>> {
-        vec![
-            Process {
-                id: 0,
-                func: Box::new(example_process),
-            },
-            Process {
-                id: 1,
-                func: Box::new(population_migration),
-            },
-        ]
-    }
-
     fn get_demo_netork() -> Vec<Vec<CellIndex>> {
         vec![vec![CellIndex(1)], vec![CellIndex(0)], vec![]]
     }
@@ -98,11 +84,12 @@ mod tests {
     }
 
     #[test]
-    fn test_run_processes() {
+    fn test_run_cell_processes() {
         let cells_in = get_demo_cells();
-        let processes = get_demo_processes();
+        let cell_processes = default_cell_processes();
         let network = get_demo_netork();
-        let updates = run_processes(&cells_in, &network, &processes);
+        let global_state = GlobalState { iterations: 0 };
+        let updates = run_processes(&cells_in, &network, &cell_processes, &global_state);
         let expected_updates = get_demo_updates();
         assert_eq!(updates.len(), expected_updates.len());
         assert_eq!(updates, expected_updates);
@@ -134,11 +121,14 @@ mod tests {
             cells: get_demo_cells(),
             network: vec![vec![]], // Note network calculated internally
         };
-        let processes = get_demo_processes();
-        let final_state = run_iteration(&processes, initial_state);
+        let cell_processes = default_cell_processes();
+        // TODO: Get global processes
+        let global_processes = default_global_processes();
+        let final_state = run_iteration(&cell_processes, &global_processes, initial_state);
         assert_eq!(final_state.cells.len(), 3);
         assert_eq!(final_state.cells[0].population, 17); // initially 12
         assert_eq!(final_state.cells[1].population, 46); // initially 40
         assert_eq!(final_state.cells[2].population, 44); // initially 40
+        assert_eq!(final_state.global_state.iterations, 1); // initially 0
     }
 }

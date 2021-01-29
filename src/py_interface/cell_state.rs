@@ -6,7 +6,8 @@ access from python.
 */
 extern crate pyo3;
 
-use crate::process_runner::state::CellStateBase;
+use crate::process_runner::cells::state::CellStateBase;
+use crate::py_interface::PyWrapperBase;
 
 /// Generic Type CellStatePy base
 ///
@@ -15,7 +16,4 @@ use crate::process_runner::state::CellStateBase;
 ///
 /// It should also implement new as a pymethod
 /// and the PyObjectProtocol
-pub trait CellStatePyBase<T: CellStateBase> {
-    fn get_inner(&self) -> T;
-    fn from_inner(inner: &T) -> Self;
-}
+pub trait CellStatePyBase<T: CellStateBase>: PyWrapperBase<T> {}
