@@ -1,3 +1,9 @@
+/// Run Module
+///
+/// 'a lifetime represents a single iteration
+///
+use super::network::get_network_map;
+use super::state::IterationState;
 use super::cells;
 use super::cells::run::apply_cell_updates;
 use super::cells::run::Process as CellProcess;
@@ -6,12 +12,6 @@ use super::cells::state::CellStateBase;
 use super::global;
 use super::global::run::Process as GlobalProcess;
 use super::global::state::GlobalStateBase;
-/// Run Module
-///
-/// 'a lifetime represents a single iteration
-///
-use super::network::get_network_map;
-use super::state::IterationState;
 
 /// Run a single iteration of the model
 pub fn run_iteration<C: CellStateBase, G: GlobalStateBase>(

@@ -41,6 +41,15 @@ pub struct Process<C: CellStateBase, G: GlobalStateBase> {
     pub func: ProcessFuncT<C, G>,
 }
 
+impl<C: CellStateBase, G: GlobalStateBase> std::fmt::Debug for Process<C, G> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Process")
+            .field("id", &self.id)
+            .finish()
+    }
+}
+
+
 #[allow(dead_code)]
 impl<C: CellStateBase, G: GlobalStateBase> Process<C, G> {
     pub fn new(id: u32, func: ProcessFuncT<C, G>) -> Process<C, G> {
