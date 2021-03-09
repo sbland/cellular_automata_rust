@@ -23,12 +23,6 @@ pub fn run_iteration<C: CellStateBase, G: GlobalStateBase>(
 ) -> IterationState<C, G> {
     let network: Vec<Vec<CellIndex>> = get_network_map::<C>(&input_state.cells);
     let mut current_state = input_state;
-    let updated_global_state = global::run::run_processes::<C, G>(
-        &current_state.cells.iter().collect(),
-        &network,
-        &global_processes,
-        current_state.global_state,
-    );
 
     let mut updated_cells = current_state.cells;
     if update_per_process {
@@ -38,7 +32,7 @@ pub fn run_iteration<C: CellStateBase, G: GlobalStateBase>(
                 &updated_cells,
                 &network,
                 process,
-                &updated_global_state,
+                &current_state.global_state,
             );
             updated_cells = apply_cell_updates::<C>(updated_cells, cell_updates);
         }
@@ -47,10 +41,16 @@ pub fn run_iteration<C: CellStateBase, G: GlobalStateBase>(
             &updated_cells,
             &network,
             &cell_processes.iter().collect(),
-            &updated_global_state,
+            &current_state.global_state,
         );
         updated_cells = apply_cell_updates::<C>(updated_cells, cell_updates);
     }
+    let updated_global_state = global::run::run_processes::<C, G>(
+        &updated_cells.iter().collect(),
+        &network,
+        &global_processes,
+        current_state.global_state,
+    );
 
     // Update state
     current_state.global_state = updated_global_state;
