@@ -30,6 +30,7 @@ pub fn run_iteration_wrap<
     global_state: GW,
     cell_processes: Vec<CellProcess<T, G>>,
     global_processes: Vec<GlobalProcess<T, G>>,
+    update_per_process: bool,
 ) -> PyResult<(Vec<S>, GW, Vec<Vec<u32>>)> {
     // 1. Get the processes that are to be used.
     // let processes = processes_in.into().unwrap_or(default_processes());
@@ -46,8 +47,12 @@ pub fn run_iteration_wrap<
     };
 
     // 4. Run the iteration
-    let out_state: IterationState<T, G> =
-        run_iteration(&cell_processes, &global_processes, initial_state);
+    let out_state: IterationState<T, G> = run_iteration(
+        &cell_processes,
+        &global_processes,
+        initial_state,
+        update_per_process,
+    );
 
     // 5. Wrap the cells state back up in the CellStatePy wrapper
     let cell_data_outer: Vec<S> = out_state

@@ -28,6 +28,7 @@ pub fn run_iteration_py(
         global_state,
         default_cell_processes(),
         global_processes,
+        true,
     )
 }
 

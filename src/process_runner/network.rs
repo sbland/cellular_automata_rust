@@ -2,6 +2,8 @@ use super::cells::state::CellIndex;
 use super::cells::state::CellStateBase;
 use geo::algorithm::geodesic_distance::GeodesicDistance;
 
+pub type CellNetwork = Vec<Vec<CellIndex>>;
+
 pub fn check_is_neighbour<T: CellStateBase>(cell_a: &T, cell_b: &T) -> bool {
     if cell_a.id() == cell_b.id() {
         return false;
@@ -13,8 +15,8 @@ pub fn check_is_neighbour<T: CellStateBase>(cell_a: &T, cell_b: &T) -> bool {
     true
 }
 
-pub fn get_network_map<T: CellStateBase>(cells: &[T]) -> Vec<Vec<CellIndex>> {
-    let mut network: Vec<Vec<CellIndex>> = Vec::new();
+pub fn get_network_map<T: CellStateBase>(cells: &[T]) -> CellNetwork {
+    let mut network: CellNetwork = Vec::new();
     for cell in cells.iter() {
         // println!("Finding neighbours for cell {}", cell.id);
         let mut cell_network: Vec<CellIndex> = Vec::new();

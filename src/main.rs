@@ -24,7 +24,7 @@ fn main() {
     };
     let cell_processes = default_cell_processes();
     let global_processes = default_global_processes();
-    let final_state = run_iteration(&cell_processes, &global_processes, initial_state);
+    let final_state = run_iteration(&cell_processes, &global_processes, initial_state, true);
 
     println!("Cell 0 pop! {}", final_state.cells[0].population);
     println!("Cell 1 pop! {}", final_state.cells[1].population);

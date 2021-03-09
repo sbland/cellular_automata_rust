@@ -43,12 +43,9 @@ pub struct Process<C: CellStateBase, G: GlobalStateBase> {
 
 impl<C: CellStateBase, G: GlobalStateBase> std::fmt::Debug for Process<C, G> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Process")
-            .field("id", &self.id)
-            .finish()
+        f.debug_struct("Process").field("id", &self.id).finish()
     }
 }
-
 
 #[allow(dead_code)]
 impl<C: CellStateBase, G: GlobalStateBase> Process<C, G> {
@@ -86,7 +83,7 @@ pub fn run_process<C: CellStateBase, G: GlobalStateBase>(
 pub fn run_processes<C: CellStateBase, G: GlobalStateBase>(
     cells: &Vec<C>,
     network: &Vec<Vec<CellIndex>>,
-    processes: &Vec<Process<C, G>>,
+    processes: &Vec<&Process<C, G>>,
     global_state: &G,
 ) -> Vec<CellUpdate<C>> {
     let mut cell_updates: Vec<CellUpdate<C>> = Vec::new();
@@ -103,6 +100,29 @@ pub fn run_processes<C: CellStateBase, G: GlobalStateBase>(
                 run_process::<C, G>(&cell, &process, &neighbours, &global_state);
             cell_updates.append(&mut more_cell_updates);
         }
+    }
+    cell_updates
+}
+
+/// Run all processes on all cells
+pub fn run_process_on_cells<C: CellStateBase, G: GlobalStateBase>(
+    cells: &Vec<C>,
+    network: &Vec<Vec<CellIndex>>,
+    process: &Process<C, G>,
+    global_state: &G,
+) -> Vec<CellUpdate<C>> {
+    let mut cell_updates: Vec<CellUpdate<C>> = Vec::new();
+    for cell in cells.iter() {
+        let cell_id: usize = cell.id().into();
+        let cell_network = &network[cell_id];
+        let neighbours = cell_network
+            .iter()
+            // Note we use tuple struct destructuring here
+            .map(|CellIndex(id)| &cells[*id as usize])
+            .collect::<Vec<_>>();
+        let mut more_cell_updates =
+            run_process::<C, G>(&cell, &process, &neighbours, &global_state);
+        cell_updates.append(&mut more_cell_updates);
     }
     cell_updates
 }
