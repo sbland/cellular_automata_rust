@@ -5,6 +5,7 @@
 ///
 use super::state::CellIndex;
 use super::state::CellStateBase;
+use crate::process_runner::global::run::GlobalUpdate;
 use crate::process_runner::global::state::GlobalStateBase;
 
 /// A function that takes a CellState, makes a modification and returns the modified CellState
@@ -34,7 +35,8 @@ impl<T: CellStateBase> CellUpdate<T> {
 }
 
 // A function that takes a cell and its neighbours and returns a CellUpdate instance
-type ProcessFuncT<C, G> = Box<dyn Fn(&C, &Vec<&C>, &G) -> Vec<CellUpdate<C>>>;
+type ProcessFuncT<C, G> =
+    Box<dyn Fn(&C, &Vec<&C>, &G) -> (Vec<CellUpdate<C>>, Vec<GlobalUpdate<G>>)>;
 
 pub struct Process<C: CellStateBase, G: GlobalStateBase> {
     pub id: u32,
@@ -47,7 +49,6 @@ impl<C: CellStateBase, G: GlobalStateBase> std::fmt::Debug for Process<C, G> {
     }
 }
 
-#[allow(dead_code)]
 impl<C: CellStateBase, G: GlobalStateBase> Process<C, G> {
     pub fn new(id: u32, func: ProcessFuncT<C, G>) -> Process<C, G> {
         Process { id, func }
@@ -75,7 +76,10 @@ pub fn run_process<C: CellStateBase, G: GlobalStateBase>(
     global_state: &G,
 ) -> Vec<CellUpdate<C>> {
     let func = &process.func;
-    let cell_updates: Vec<CellUpdate<C>> = func(&cell, &neighbours, &global_state);
+    let updates = func(&cell, &neighbours, &global_state);
+    let cell_updates: Vec<CellUpdate<C>> = updates.0;
+    let global_updates: Vec<GlobalUpdate<G>> = updates.1;
+    // TODO: implement global updates
     cell_updates
 }
 
@@ -129,5 +133,26 @@ pub fn run_process_on_cells<C: CellStateBase, G: GlobalStateBase>(
 
 #[cfg(test)]
 mod tests {
-    // TODO: Implement tests
+    use super::*;
+    use crate::process_runner::examples::example_processes::*;
+    use crate::process_runner::examples::example_state::*;
+    use geo::point;
+
+    #[test]
+    fn can_run_process() {
+        let cells: Vec<CellState> = vec![
+            CellState::new(0, point!(x: 0.0, y: 0.0), 100),
+            CellState::new(1, point!(x: 0.0, y: 0.0), 100),
+            CellState::new(2, point!(x: 0.0, y: 0.0), 100),
+        ];
+        let network: Vec<Vec<&CellState>> = vec![
+            vec![&cells[1], &cells[2]],
+            vec![&cells[0], &cells[2]],
+            vec![&cells[0], &cells[1]],
+        ];
+        let p = Process::new(0, Box::new(increase_population_by_10_percent));
+        let processes: Vec<&Process<CellState, GlobalState>> = vec![&p];
+        let global_state: GlobalState = GlobalState::new();
+        run_process::<CellState, GlobalState>(&cells[0], &processes[0], &network[0], &global_state);
+    }
 }

@@ -5,6 +5,13 @@ use crate::process_runner::cells::state::CellStateBase;
 // A function that takes the cells and global state and returns an updated global state
 type ProcessFuncT<C, G> = Box<dyn Fn(&Vec<&C>, G) -> G>;
 
+/// A boxed function to modify the global state
+pub type GlobalUpdateFn<G> = Box<dyn Fn(G) -> G>;
+
+pub struct GlobalUpdate<T: GlobalStateBase> {
+    pub action: GlobalUpdateFn<T>,
+}
+
 pub struct Process<C: CellStateBase, G: GlobalStateBase> {
     pub id: u32,
     pub func: ProcessFuncT<C, G>,

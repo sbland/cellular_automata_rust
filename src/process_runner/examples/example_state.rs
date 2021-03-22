@@ -56,6 +56,13 @@ pub struct GlobalState {
     pub iterations: u32,
 }
 
+#[allow(dead_code)]
+impl GlobalState {
+    pub fn new() -> GlobalState {
+        GlobalState { iterations: 1 }
+    }
+}
+
 impl GlobalStateBase for GlobalState {}
 
 #[cfg(test)]

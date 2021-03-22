@@ -2,6 +2,7 @@ use super::example_state::CellState;
 use super::example_state::GlobalState;
 use crate::process_runner::cells::run::CellUpdate;
 use crate::process_runner::cells::run::Process as CellProcess;
+use crate::process_runner::global::run::GlobalUpdate;
 use crate::process_runner::global::run::Process as GlobalProcess;
 
 pub type CellProcessT = CellProcess<CellState, GlobalState>;
@@ -11,15 +12,18 @@ pub fn increase_population_by_10_percent(
     cell_state: &CellState,
     _neighbours: &Vec<&CellState>,
     _global_state: &GlobalState,
-) -> Vec<CellUpdate<CellState>> {
-    vec![CellUpdate {
-        target_cell: cell_state.id,
-        action: Box::new(|mut cell_state: CellState| -> CellState {
-            // cell_state.population = 10;
-            cell_state.population += (cell_state.population as f64 / 10.0).floor() as u32;
-            cell_state
-        }),
-    }]
+) -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
+    (
+        vec![CellUpdate {
+            target_cell: cell_state.id,
+            action: Box::new(|mut cell_state: CellState| -> CellState {
+                // cell_state.population = 10;
+                cell_state.population += (cell_state.population as f64 / 10.0).floor() as u32;
+                cell_state
+            }),
+        }],
+        vec![],
+    )
 }
 
 #[allow(dead_code)]
@@ -27,14 +31,17 @@ pub fn set_population_to_100(
     cell_state: &CellState,
     _neighbours: &Vec<&CellState>,
     _global_state: &GlobalState,
-) -> Vec<CellUpdate<CellState>> {
-    vec![CellUpdate {
-        target_cell: cell_state.id,
-        action: Box::new(|mut cell_state: CellState| -> CellState {
-            cell_state.population = 100;
-            cell_state
-        }),
-    }]
+) -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
+    (
+        vec![CellUpdate {
+            target_cell: cell_state.id,
+            action: Box::new(|mut cell_state: CellState| -> CellState {
+                cell_state.population = 100;
+                cell_state
+            }),
+        }],
+        vec![],
+    )
 }
 
 #[allow(dead_code)]
@@ -43,38 +50,44 @@ pub fn conditional_pop_reset(
     cell_state: &CellState,
     _neighbours: &Vec<&CellState>,
     _global_state: &GlobalState,
-) -> Vec<CellUpdate<CellState>> {
+) -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
     let new_population: u32 = if cell_state.population > 5 {
         cell_state.population
     } else {
         0
     };
-    vec![CellUpdate {
-        target_cell: cell_state.id,
-        action: Box::new(move |mut cell_state: CellState| -> CellState {
-            cell_state.population = new_population;
-            cell_state
-        }),
-    }]
+    (
+        vec![CellUpdate {
+            target_cell: cell_state.id,
+            action: Box::new(move |mut cell_state: CellState| -> CellState {
+                cell_state.population = new_population;
+                cell_state
+            }),
+        }],
+        vec![],
+    )
 }
 
 pub fn population_migration(
     cell_state: &CellState,
     neighbours: &Vec<&CellState>,
     _global_state: &GlobalState,
-) -> Vec<CellUpdate<CellState>> {
+) -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
     let mut movement = 0;
     for n in neighbours.iter() {
         movement += (n.population as f64 / 10.0).ceil() as u32;
     }
-    vec![CellUpdate {
-        target_cell: cell_state.id,
-        // Note: We use the move keyword here to allow external variables to be captured by the closure
-        action: Box::new(move |mut cell_state: CellState| -> CellState {
-            cell_state.population += movement as u32;
-            cell_state
-        }),
-    }]
+    (
+        vec![CellUpdate {
+            target_cell: cell_state.id,
+            // Note: We use the move keyword here to allow external variables to be captured by the closure
+            action: Box::new(move |mut cell_state: CellState| -> CellState {
+                cell_state.population += movement as u32;
+                cell_state
+            }),
+        }],
+        vec![],
+    )
 }
 
 /// Example global process that just returns the global state
