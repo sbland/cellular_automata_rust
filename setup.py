@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="cellular_automata_pyinterface",
-    version="0.3.0",
+    version="0.3.1",
     author="sam bland",
     author_email="sam.bland@sei.org",
     description="Cellular Automata Agent model",
