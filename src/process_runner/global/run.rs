@@ -49,7 +49,7 @@ pub fn apply_global_updates<T: GlobalStateBase + Clone>(
 pub fn run_processes<C: CellStateBase, G: GlobalStateBase>(
     cells: &Vec<&C>,
     _network: &Vec<Vec<CellIndex>>,
-    processes: &Vec<Process<C, G>>,
+    processes: &Vec<&Process<C, G>>,
     global_state: &G,
 ) -> Vec<GlobalUpdate<G>> {
     processes
@@ -148,7 +148,7 @@ mod tests {
             run_processes::<CellState, GlobalState>(
                 &cells.iter().collect(),
                 &network,
-                &processes,
+                &processes.iter().collect(),
                 &global_state,
             )
         }

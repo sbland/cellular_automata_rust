@@ -54,14 +54,27 @@ pub fn run_iteration<C: CellStateBase, G: GlobalStateBase>(
         updated_global_state = apply_global_updates::<G>(updated_global_state, global_updates)
     }
 
-    let update_global_actions = global::run::run_processes::<C, G>(
-        &updated_cells.iter().collect(),
-        &network,
-        &global_processes,
-        &updated_global_state,
-    );
-
-    let updated_global_state = apply_global_updates(updated_global_state, update_global_actions);
+    if update_per_process {
+        // For process in cell_processes run
+        for process in global_processes.iter() {
+            let update_global_actions = global::run::run_processes::<C, G>(
+                &updated_cells.iter().collect(),
+                &network,
+                &vec![process],
+                &updated_global_state,
+            );
+            updated_global_state =
+                apply_global_updates(updated_global_state, update_global_actions);
+        }
+    } else {
+        let update_global_actions = global::run::run_processes::<C, G>(
+            &updated_cells.iter().collect(),
+            &network,
+            &global_processes.iter().collect(),
+            &updated_global_state,
+        );
+        updated_global_state = apply_global_updates(updated_global_state, update_global_actions);
+    }
 
     // Update state
     current_state.global_state = updated_global_state;
