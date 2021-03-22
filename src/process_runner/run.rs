@@ -28,21 +28,23 @@ pub fn run_iteration<C: CellStateBase, G: GlobalStateBase>(
     if update_per_process {
         // For process in cell_processes run
         for process in cell_processes.iter() {
-            let cell_updates = cells::run::run_process_on_cells::<C, G>(
+            let updates = cells::run::run_process_on_cells::<C, G>(
                 &updated_cells,
                 &network,
                 process,
                 &current_state.global_state,
             );
+            let cell_updates = updates.0;
             updated_cells = apply_cell_updates::<C>(updated_cells, cell_updates);
         }
     } else {
-        let cell_updates = cells::run::run_processes::<C, G>(
+        let updates = cells::run::run_processes::<C, G>(
             &updated_cells,
             &network,
             &cell_processes.iter().collect(),
             &current_state.global_state,
         );
+        let cell_updates = updates.0;
         updated_cells = apply_cell_updates::<C>(updated_cells, cell_updates);
     }
     let updated_global_state = global::run::run_processes::<C, G>(

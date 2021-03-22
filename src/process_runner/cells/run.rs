@@ -74,13 +74,13 @@ pub fn run_process<C: CellStateBase, G: GlobalStateBase>(
     process: &Process<C, G>,
     neighbours: &Vec<&C>, // A list of the neighbours states
     global_state: &G,
-) -> Vec<CellUpdate<C>> {
+) -> (Vec<CellUpdate<C>>, Vec<GlobalUpdate<G>>) {
     let func = &process.func;
     let updates = func(&cell, &neighbours, &global_state);
     let cell_updates: Vec<CellUpdate<C>> = updates.0;
     let global_updates: Vec<GlobalUpdate<G>> = updates.1;
     // TODO: implement global updates
-    cell_updates
+    (cell_updates, global_updates)
 }
 
 /// Run all processes on all cells
@@ -89,8 +89,9 @@ pub fn run_processes<C: CellStateBase, G: GlobalStateBase>(
     network: &Vec<Vec<CellIndex>>,
     processes: &Vec<&Process<C, G>>,
     global_state: &G,
-) -> Vec<CellUpdate<C>> {
+) -> (Vec<CellUpdate<C>>, Vec<GlobalUpdate<G>>) {
     let mut cell_updates: Vec<CellUpdate<C>> = Vec::new();
+    let mut global_updates: Vec<GlobalUpdate<G>> = Vec::new();
     for cell in cells.iter() {
         let cell_id: usize = cell.id().into();
         let cell_network = &network[cell_id];
@@ -100,12 +101,12 @@ pub fn run_processes<C: CellStateBase, G: GlobalStateBase>(
             .map(|CellIndex(id)| &cells[*id as usize])
             .collect::<Vec<_>>();
         for process in processes.iter() {
-            let mut more_cell_updates =
-                run_process::<C, G>(&cell, &process, &neighbours, &global_state);
-            cell_updates.append(&mut more_cell_updates);
+            let mut updates = run_process::<C, G>(&cell, &process, &neighbours, &global_state);
+            cell_updates.append(&mut updates.0);
+            global_updates.append(&mut updates.1);
         }
     }
-    cell_updates
+    (cell_updates, global_updates)
 }
 
 /// Run all processes on all cells
@@ -114,8 +115,9 @@ pub fn run_process_on_cells<C: CellStateBase, G: GlobalStateBase>(
     network: &Vec<Vec<CellIndex>>,
     process: &Process<C, G>,
     global_state: &G,
-) -> Vec<CellUpdate<C>> {
+) -> (Vec<CellUpdate<C>>, Vec<GlobalUpdate<G>>) {
     let mut cell_updates: Vec<CellUpdate<C>> = Vec::new();
+    let mut global_updates: Vec<GlobalUpdate<G>> = Vec::new();
     for cell in cells.iter() {
         let cell_id: usize = cell.id().into();
         let cell_network = &network[cell_id];
@@ -124,35 +126,131 @@ pub fn run_process_on_cells<C: CellStateBase, G: GlobalStateBase>(
             // Note we use tuple struct destructuring here
             .map(|CellIndex(id)| &cells[*id as usize])
             .collect::<Vec<_>>();
-        let mut more_cell_updates =
-            run_process::<C, G>(&cell, &process, &neighbours, &global_state);
-        cell_updates.append(&mut more_cell_updates);
+        let mut updates = run_process::<C, G>(&cell, &process, &neighbours, &global_state);
+        cell_updates.append(&mut updates.0);
+        global_updates.append(&mut updates.1);
     }
-    cell_updates
+    (cell_updates, global_updates)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::process_runner::examples::example_processes::*;
     use crate::process_runner::examples::example_state::*;
     use geo::point;
 
-    #[test]
-    fn can_run_process() {
-        let cells: Vec<CellState> = vec![
+    fn demo_process_fn(
+        cell_state: &CellState,
+        _neighbours: &Vec<&CellState>,
+        global_state: &GlobalState,
+    ) -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
+        let a = global_state.iterations;
+        (
+            vec![CellUpdate {
+                target_cell: cell_state.id,
+                action: Box::new(move |mut cell_state_loc: CellState| -> CellState {
+                    cell_state_loc.population += a;
+                    cell_state_loc
+                }),
+            }],
+            vec![GlobalUpdate {
+                id: format!("Global act for {}", cell_state.id),
+                action: Box::new(|mut global_state_loc: GlobalState| -> GlobalState {
+                    global_state_loc.iterations += 1;
+                    global_state_loc
+                }),
+            }],
+        )
+    }
+
+    fn demo_cells() -> Vec<CellState> {
+        vec![
             CellState::new(0, point!(x: 0.0, y: 0.0), 100),
             CellState::new(1, point!(x: 0.0, y: 0.0), 100),
             CellState::new(2, point!(x: 0.0, y: 0.0), 100),
-        ];
-        let network: Vec<Vec<&CellState>> = vec![
-            vec![&cells[1], &cells[2]],
-            vec![&cells[0], &cells[2]],
-            vec![&cells[0], &cells[1]],
-        ];
-        let p = Process::new(0, Box::new(increase_population_by_10_percent));
-        let processes: Vec<&Process<CellState, GlobalState>> = vec![&p];
-        let global_state: GlobalState = GlobalState::new();
-        run_process::<CellState, GlobalState>(&cells[0], &processes[0], &network[0], &global_state);
+        ]
+    }
+
+    fn demo_network(cells: Vec<&CellState>) -> Vec<Vec<CellIndex>> {
+        vec![
+            vec![cells[1].id, cells[2].id],
+            vec![cells[0].id, cells[2].id],
+            vec![cells[0].id, cells[1].id],
+        ]
+    }
+
+    fn demo_neigbours(cells: Vec<&CellState>) -> Vec<&CellState> {
+        vec![&cells[1], &cells[2]]
+    }
+
+    fn demo_processes() -> Vec<Process<CellState, GlobalState>> {
+        let p1 = Process::new(0, Box::new(demo_process_fn));
+        let p2 = Process::new(1, Box::new(demo_process_fn));
+        vec![p1, p2]
+    }
+
+    mod test_run_process {
+        use super::*;
+
+        fn run_demo_process() -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
+            let cells = demo_cells();
+            let neighbours = demo_neigbours(cells.iter().collect());
+            let processes = demo_processes();
+            let global_state: GlobalState = GlobalState::new();
+            run_process::<CellState, GlobalState>(
+                &cells[0],
+                &processes[0],
+                &neighbours,
+                &global_state,
+            )
+        }
+
+        #[test]
+        fn can_run_process() {
+            run_demo_process();
+        }
+        #[test]
+        fn can_get_cell_state_updates_from_process() {
+            let updates = run_demo_process();
+            assert_eq!(updates.0.len(), 1);
+        }
+
+        #[test]
+        fn can_get_global_state_updates_from_process() {
+            let updates = run_demo_process();
+            assert_eq!(updates.1.len(), 1);
+        }
+    }
+
+    mod test_run_processes {
+        use super::*;
+        fn run_demo_processes() -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
+            let cells = demo_cells();
+            let network = demo_network(cells.iter().collect());
+            let processes: Vec<Process<CellState, GlobalState>> = demo_processes();
+            let global_state: GlobalState = GlobalState::new();
+            run_processes::<CellState, GlobalState>(
+                &cells,
+                &network,
+                &processes.iter().collect(),
+                &global_state,
+            )
+        }
+
+        #[test]
+        fn can_run_process() {
+            run_demo_processes();
+        }
+        #[test]
+        fn can_get_cell_state_updates_from_process() {
+            let updates = run_demo_processes();
+            assert_eq!(updates.0.len(), 6);
+        }
+
+        #[test]
+        fn can_get_global_state_updates_from_process() {
+            let updates = run_demo_processes();
+            assert_eq!(updates.1.len(), 6);
+        }
     }
 }

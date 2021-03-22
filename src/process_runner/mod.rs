@@ -23,6 +23,7 @@ mod tests {
     use examples::example_processes::GlobalProcessT;
     use examples::example_state::CellState;
     use examples::example_state::GlobalState;
+    use global::run::GlobalUpdate;
     use network::CellNetwork;
     use run::run_iteration;
     use state::IterationState;
@@ -47,33 +48,38 @@ mod tests {
     }
 
     // helper to get some demo updates
-    fn get_demo_updates() -> Vec<CellUpdate<CellState>> {
-        vec![
-            CellUpdate::<CellState> {
-                target_cell: CellIndex(0),
-                action: Box::new(action_add_population!(1)),
-            },
-            CellUpdate::<CellState> {
-                target_cell: CellIndex(0),
-                action: Box::new(action_add_population!(8)),
-            },
-            CellUpdate::<CellState> {
-                target_cell: CellIndex(1),
-                action: Box::new(action_add_population!(4)),
-            },
-            CellUpdate::<CellState> {
-                target_cell: CellIndex(1),
-                action: Box::new(action_add_population!(1)),
-            },
-            CellUpdate::<CellState> {
-                target_cell: CellIndex(2),
-                action: Box::new(action_add_population!(4)),
-            },
-            CellUpdate::<CellState> {
-                target_cell: CellIndex(2),
-                action: Box::new(action_add_population!(1)),
-            },
-        ]
+    fn get_demo_updates() -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
+        (
+            vec![
+                CellUpdate::<CellState> {
+                    target_cell: CellIndex(0),
+                    action: Box::new(action_add_population!(1)),
+                },
+                CellUpdate::<CellState> {
+                    target_cell: CellIndex(0),
+                    action: Box::new(action_add_population!(8)),
+                },
+                CellUpdate::<CellState> {
+                    target_cell: CellIndex(1),
+                    action: Box::new(action_add_population!(4)),
+                },
+                CellUpdate::<CellState> {
+                    target_cell: CellIndex(1),
+                    action: Box::new(action_add_population!(1)),
+                },
+                CellUpdate::<CellState> {
+                    target_cell: CellIndex(2),
+                    action: Box::new(action_add_population!(4)),
+                },
+                CellUpdate::<CellState> {
+                    target_cell: CellIndex(2),
+                    action: Box::new(action_add_population!(1)),
+                },
+            ],
+            vec![
+                // TODO: Add demo global updates here
+            ],
+        )
     }
 
     fn get_demo_network() -> Vec<Vec<CellIndex>> {
@@ -84,6 +90,13 @@ mod tests {
         // TODO: Improve CellUpdate Comparison for test
         fn eq(&self, other: &Self) -> bool {
             self.target_cell == other.target_cell
+        }
+    }
+
+    impl PartialEq for GlobalUpdate<GlobalState> {
+        // TODO: Improve GlobalUpdate Comparison for test
+        fn eq(&self, other: &Self) -> bool {
+            self.id == other.id
         }
     }
 
@@ -110,8 +123,10 @@ mod tests {
                 &global_state,
             );
             let expected_updates = get_demo_updates();
-            assert_eq!(updates.len(), expected_updates.len());
-            assert_eq!(updates, expected_updates);
+            assert_eq!(updates.0.len(), expected_updates.0.len());
+            assert_eq!(updates.1.len(), expected_updates.1.len());
+            assert_eq!(updates.0, expected_updates.0);
+            assert_eq!(updates.1, expected_updates.1);
         }
     }
 
@@ -131,7 +146,8 @@ mod tests {
         fn should_get_example_updates_and_apply_to_cells_changing_population() {
             let cells_in = get_demo_cells();
             let updates = get_demo_updates();
-            let updated_cells = apply_cell_updates(cells_in, updates);
+            let cell_updates = updates.0;
+            let updated_cells = apply_cell_updates(cells_in, cell_updates);
             assert_eq!(updated_cells[0].population, 21);
         }
     }

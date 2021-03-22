@@ -9,7 +9,14 @@ type ProcessFuncT<C, G> = Box<dyn Fn(&Vec<&C>, G) -> G>;
 pub type GlobalUpdateFn<G> = Box<dyn Fn(G) -> G>;
 
 pub struct GlobalUpdate<T: GlobalStateBase> {
+    pub id: String,
     pub action: GlobalUpdateFn<T>,
+}
+
+impl<T: GlobalStateBase> std::fmt::Debug for GlobalUpdate<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GlobalUpdate").finish()
+    }
 }
 
 pub struct Process<C: CellStateBase, G: GlobalStateBase> {
