@@ -1,3 +1,3 @@
-use std::fmt::Debug;
+use std::fmt;
 
-pub trait GlobalStateBase: Debug {}
+pub trait GlobalStateBase: fmt::Debug + Clone {}

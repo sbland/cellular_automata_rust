@@ -1,6 +1,6 @@
 [package]
 name = "cellular_automata"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["sam_bland <sbland.co.uk@gmail.com>"]
 edition = "2018"
 
