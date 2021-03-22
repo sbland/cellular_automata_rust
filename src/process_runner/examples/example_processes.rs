@@ -17,12 +17,18 @@ pub fn increase_population_by_10_percent(
         vec![CellUpdate {
             target_cell: cell_state.id,
             action: Box::new(|mut cell_state: CellState| -> CellState {
-                // cell_state.population = 10;
                 cell_state.population += (cell_state.population as f64 / 10.0).floor() as u32;
                 cell_state
             }),
         }],
-        vec![],
+        vec![GlobalUpdate::<GlobalState> {
+            id: format!("{}", cell_state.id),
+            action: Box::new(|mut global_state_loc: GlobalState| -> GlobalState {
+                global_state_loc.population +=
+                    (global_state_loc.population as f64 / 10.0).floor() as u32;
+                global_state_loc
+            }),
+        }],
     )
 }
 
@@ -91,18 +97,28 @@ pub fn population_migration(
 }
 
 /// Example global process that just returns the global state
-pub fn example_global_process(_cells: &Vec<&CellState>, global_state: GlobalState) -> GlobalState {
-    global_state
+pub fn example_global_process(
+    _cells: &Vec<&CellState>,
+    _global_state: &GlobalState,
+) -> Vec<GlobalUpdate<GlobalState>> {
+    vec![GlobalUpdate {
+        id: "Example global process".to_owned(),
+        action: Box::new(|global_state_loc| global_state_loc),
+    }]
 }
 
 /// Example global process that just returns the global state
 pub fn example_global_process_iter(
     _cells: &Vec<&CellState>,
-    global_state: GlobalState,
-) -> GlobalState {
-    let mut new_global_state = global_state;
-    new_global_state.iterations += 1;
-    new_global_state
+    _global_state: &GlobalState,
+) -> Vec<GlobalUpdate<GlobalState>> {
+    vec![GlobalUpdate {
+        id: "Example global process iter".to_owned(),
+        action: Box::new(|mut global_state_loc| {
+            global_state_loc.iterations += 1;
+            global_state_loc
+        }),
+    }]
 }
 
 // Default example processes

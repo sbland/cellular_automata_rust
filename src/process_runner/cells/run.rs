@@ -19,7 +19,7 @@ pub struct CellUpdate<T: CellStateBase> {
 impl<T: CellStateBase> std::fmt::Debug for CellUpdate<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CellUpdate")
-            // .field("action", &*stringify!(&self.action).to_owned())
+            .field("id", &self.target_cell.to_owned())
             .finish()
     }
 }
@@ -139,12 +139,32 @@ mod tests {
     use crate::process_runner::examples::example_state::*;
     use geo::point;
 
+    macro_rules! action_add_population {
+        ($amount: literal) => {{
+            fn add_population(mut cell_state: CellState) -> CellState {
+                cell_state.population += $amount;
+                cell_state
+            }
+            add_population
+        }};
+    }
+
+    macro_rules! action_add_population_global {
+        ($amount: literal) => {{
+            fn add_population(mut global_state: GlobalState) -> GlobalState {
+                global_state.population += $amount;
+                global_state
+            }
+            add_population
+        }};
+    }
+
     fn demo_process_fn(
         cell_state: &CellState,
         _neighbours: &Vec<&CellState>,
         global_state: &GlobalState,
     ) -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
-        let a = global_state.iterations;
+        let a = global_state.population;
         (
             vec![CellUpdate {
                 target_cell: cell_state.id,
@@ -156,7 +176,7 @@ mod tests {
             vec![GlobalUpdate {
                 id: format!("Global act for {}", cell_state.id),
                 action: Box::new(|mut global_state_loc: GlobalState| -> GlobalState {
-                    global_state_loc.iterations += 1;
+                    global_state_loc.population += 1;
                     global_state_loc
                 }),
             }],
@@ -189,6 +209,64 @@ mod tests {
         vec![p1, p2]
     }
 
+    fn demo_cell_updates() -> Vec<CellUpdate<CellState>> {
+        vec![
+            CellUpdate::<CellState> {
+                target_cell: CellIndex(0),
+                action: Box::new(action_add_population!(11)),
+            },
+            CellUpdate::<CellState> {
+                target_cell: CellIndex(0),
+                action: Box::new(action_add_population!(11)),
+            },
+            CellUpdate::<CellState> {
+                target_cell: CellIndex(1),
+                action: Box::new(action_add_population!(11)),
+            },
+            CellUpdate::<CellState> {
+                target_cell: CellIndex(1),
+                action: Box::new(action_add_population!(11)),
+            },
+            CellUpdate::<CellState> {
+                target_cell: CellIndex(2),
+                action: Box::new(action_add_population!(11)),
+            },
+            CellUpdate::<CellState> {
+                target_cell: CellIndex(2),
+                action: Box::new(action_add_population!(11)),
+            },
+        ]
+    }
+
+    fn demo_global_updates() -> Vec<GlobalUpdate<GlobalState>> {
+        vec![
+            GlobalUpdate::<GlobalState> {
+                id: "Global act for 0".to_owned(),
+                action: Box::new(action_add_population_global!(11)),
+            },
+            GlobalUpdate::<GlobalState> {
+                id: "Global act for 0".to_owned(),
+                action: Box::new(action_add_population_global!(11)),
+            },
+            GlobalUpdate::<GlobalState> {
+                id: "Global act for 1".to_owned(),
+                action: Box::new(action_add_population_global!(11)),
+            },
+            GlobalUpdate::<GlobalState> {
+                id: "Global act for 1".to_owned(),
+                action: Box::new(action_add_population_global!(11)),
+            },
+            GlobalUpdate::<GlobalState> {
+                id: "Global act for 2".to_owned(),
+                action: Box::new(action_add_population_global!(11)),
+            },
+            GlobalUpdate::<GlobalState> {
+                id: "Global act for 2".to_owned(),
+                action: Box::new(action_add_population_global!(11)),
+            },
+        ]
+    }
+
     mod test_run_process {
         use super::*;
 
@@ -196,7 +274,7 @@ mod tests {
             let cells = demo_cells();
             let neighbours = demo_neigbours(cells.iter().collect());
             let processes = demo_processes();
-            let global_state: GlobalState = GlobalState::new();
+            let global_state: GlobalState = GlobalState::new(0);
             run_process::<CellState, GlobalState>(
                 &cells[0],
                 &processes[0],
@@ -209,26 +287,32 @@ mod tests {
         fn can_run_process() {
             run_demo_process();
         }
+
         #[test]
         fn can_get_cell_state_updates_from_process() {
             let updates = run_demo_process();
-            assert_eq!(updates.0.len(), 1);
+            let example_updates = demo_cell_updates();
+            assert_eq!(updates.0.len(), example_updates.len() / 6);
+            assert_eq!(updates.0, example_updates[0..1]);
         }
 
         #[test]
         fn can_get_global_state_updates_from_process() {
             let updates = run_demo_process();
-            assert_eq!(updates.1.len(), 1);
+            let example_updates = demo_global_updates();
+            assert_eq!(updates.1.len(), example_updates.len() / 6);
+            assert_eq!(updates.1, example_updates[0..1]);
         }
     }
 
     mod test_run_processes {
         use super::*;
+
         fn run_demo_processes() -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
             let cells = demo_cells();
             let network = demo_network(cells.iter().collect());
             let processes: Vec<Process<CellState, GlobalState>> = demo_processes();
-            let global_state: GlobalState = GlobalState::new();
+            let global_state: GlobalState = GlobalState::new(0);
             run_processes::<CellState, GlobalState>(
                 &cells,
                 &network,
@@ -241,16 +325,42 @@ mod tests {
         fn can_run_process() {
             run_demo_processes();
         }
+
         #[test]
         fn can_get_cell_state_updates_from_process() {
             let updates = run_demo_processes();
-            assert_eq!(updates.0.len(), 6);
+            let example_updates = demo_cell_updates();
+            assert_eq!(updates.0.len(), example_updates.len());
+            assert_eq!(updates.0, example_updates);
         }
 
         #[test]
         fn can_get_global_state_updates_from_process() {
             let updates = run_demo_processes();
-            assert_eq!(updates.1.len(), 6);
+            let example_updates = demo_global_updates();
+            assert_eq!(updates.1.len(), example_updates.len());
+            assert_eq!(updates.1, example_updates);
+        }
+    }
+
+    mod test_apply_cell_updates {
+        use super::*;
+        #[test]
+        fn should_apply_population_addition_update_to_cell_and_increase_population() {
+            let cells_in = demo_cells();
+            let updates = vec![CellUpdate::<CellState> {
+                target_cell: CellIndex(0),
+                action: Box::new(action_add_population!(99)),
+            }];
+            let updated_cells = apply_cell_updates(cells_in, updates);
+            assert_eq!(updated_cells[0].population, 199);
+        }
+        #[test]
+        fn should_get_example_updates_and_apply_to_cells_changing_population() {
+            let cells_in = demo_cells();
+            let cell_updates = demo_cell_updates();
+            let updated_cells = apply_cell_updates(cells_in, cell_updates);
+            assert_eq!(updated_cells[0].population, 122);
         }
     }
 }

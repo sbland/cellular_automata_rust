@@ -78,9 +78,12 @@ pub struct GlobalStatePy {
 #[pymethods]
 impl GlobalStatePy {
     #[new]
-    pub fn new() -> Self {
+    pub fn new(population: u32) -> Self {
         GlobalStatePy {
-            inner: GlobalState { iterations: 0 },
+            inner: GlobalState {
+                iterations: 0,
+                population,
+            },
         }
     }
 }

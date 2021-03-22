@@ -18,7 +18,10 @@ fn main() {
         .map(|i| CellState::new(i, point!(x: 0.0, y: i as f64/100.0), 5))
         .collect::<Vec<_>>();
     let initial_state = IterationState {
-        global_state: GlobalState { iterations: 0 },
+        global_state: GlobalState {
+            iterations: 0,
+            population: 0,
+        },
         cells: cells,
         network: vec![vec![]],
     };

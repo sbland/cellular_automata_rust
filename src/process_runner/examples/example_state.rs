@@ -54,12 +54,16 @@ impl CellStateBase for CellState {
 #[derive(Debug, Copy, Clone, Default)]
 pub struct GlobalState {
     pub iterations: u32,
+    pub population: u32,
 }
 
 #[allow(dead_code)]
 impl GlobalState {
-    pub fn new() -> GlobalState {
-        GlobalState { iterations: 1 }
+    pub fn new(population: u32) -> GlobalState {
+        GlobalState {
+            iterations: 1,
+            population,
+        }
     }
 }
 

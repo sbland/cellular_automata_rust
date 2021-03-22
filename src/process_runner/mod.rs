@@ -13,10 +13,7 @@ mod tests {
     use geo::point;
 
     use crate::process_runner::cells::run::Process as CellProcess;
-    use cells::run::apply_cell_updates;
-    use cells::run::run_processes;
     use cells::run::CellUpdate;
-    use cells::state::CellIndex;
     use examples::example_processes::default_cell_processes;
     use examples::example_processes::default_global_processes;
     use examples::example_processes::CellProcessT;
@@ -24,7 +21,6 @@ mod tests {
     use examples::example_state::CellState;
     use examples::example_state::GlobalState;
     use global::run::GlobalUpdate;
-    use network::CellNetwork;
     use run::run_iteration;
     use state::IterationState;
 
@@ -34,56 +30,6 @@ mod tests {
             CellState::new(1, point!(x:5.77, y:-0.02), 40),
             CellState::new(2, point!(x:99.99, y:-0.42), 40),
         ]
-    }
-
-    // helper to create a add population action
-    macro_rules! action_add_population {
-        ($amount: literal) => {{
-            fn add_population(mut cell_state: CellState) -> CellState {
-                cell_state.population += $amount;
-                cell_state
-            }
-            add_population
-        }};
-    }
-
-    // helper to get some demo updates
-    fn get_demo_updates() -> (Vec<CellUpdate<CellState>>, Vec<GlobalUpdate<GlobalState>>) {
-        (
-            vec![
-                CellUpdate::<CellState> {
-                    target_cell: CellIndex(0),
-                    action: Box::new(action_add_population!(1)),
-                },
-                CellUpdate::<CellState> {
-                    target_cell: CellIndex(0),
-                    action: Box::new(action_add_population!(8)),
-                },
-                CellUpdate::<CellState> {
-                    target_cell: CellIndex(1),
-                    action: Box::new(action_add_population!(4)),
-                },
-                CellUpdate::<CellState> {
-                    target_cell: CellIndex(1),
-                    action: Box::new(action_add_population!(1)),
-                },
-                CellUpdate::<CellState> {
-                    target_cell: CellIndex(2),
-                    action: Box::new(action_add_population!(4)),
-                },
-                CellUpdate::<CellState> {
-                    target_cell: CellIndex(2),
-                    action: Box::new(action_add_population!(1)),
-                },
-            ],
-            vec![
-                // TODO: Add demo global updates here
-            ],
-        )
-    }
-
-    fn get_demo_network() -> Vec<Vec<CellIndex>> {
-        vec![vec![CellIndex(1)], vec![CellIndex(0)], vec![]]
     }
 
     impl PartialEq for CellUpdate<CellState> {
@@ -100,58 +46,6 @@ mod tests {
         }
     }
 
-    mod test_run_cell_process {
-        use super::*;
-        fn test_setup() -> (Vec<CellState>, Vec<CellProcessT>, CellNetwork, GlobalState) {
-            let cells_in = get_demo_cells();
-            let cell_processes = default_cell_processes();
-            let network = get_demo_network();
-            let global_state = GlobalState {
-                iterations: 0,
-                // ..Default::default()
-            };
-            (cells_in, cell_processes, network, global_state)
-        }
-
-        #[test]
-        fn should_run_processes_and_get_a_vector_of_updates() {
-            let (cells_in, cell_processes, network, global_state) = test_setup();
-            let updates = run_processes(
-                &cells_in,
-                &network,
-                &cell_processes.iter().collect(),
-                &global_state,
-            );
-            let expected_updates = get_demo_updates();
-            assert_eq!(updates.0.len(), expected_updates.0.len());
-            assert_eq!(updates.1.len(), expected_updates.1.len());
-            assert_eq!(updates.0, expected_updates.0);
-            assert_eq!(updates.1, expected_updates.1);
-        }
-    }
-
-    mod test_apply_cell_updates {
-        use super::*;
-        #[test]
-        fn should_apply_population_addition_update_to_cell_and_increase_population() {
-            let cells_in = get_demo_cells();
-            let updates = vec![CellUpdate::<CellState> {
-                target_cell: CellIndex(0),
-                action: Box::new(action_add_population!(99)),
-            }];
-            let updated_cells = apply_cell_updates(cells_in, updates);
-            assert_eq!(updated_cells[0].population, 111);
-        }
-        #[test]
-        fn should_get_example_updates_and_apply_to_cells_changing_population() {
-            let cells_in = get_demo_cells();
-            let updates = get_demo_updates();
-            let cell_updates = updates.0;
-            let updated_cells = apply_cell_updates(cells_in, cell_updates);
-            assert_eq!(updated_cells[0].population, 21);
-        }
-    }
-
     mod test_run_iteration {
         use super::*;
 
@@ -161,7 +55,10 @@ mod tests {
             Vec<GlobalProcessT>,
         ) {
             let initial_state = IterationState {
-                global_state: GlobalState { iterations: 0 },
+                global_state: GlobalState {
+                    iterations: 0,
+                    population: 0,
+                },
                 cells: get_demo_cells(),
                 network: vec![vec![]], // Note network calculated internally
             };
@@ -192,7 +89,10 @@ mod tests {
         /// or overrides a previous update.
         fn should_run_processes_in_series() {
             let mut initial_state = IterationState {
-                global_state: GlobalState { iterations: 0 },
+                global_state: GlobalState {
+                    iterations: 0,
+                    population: 0,
+                },
                 cells: get_demo_cells(),
                 network: vec![vec![]], // Note network calculated internally
             };
