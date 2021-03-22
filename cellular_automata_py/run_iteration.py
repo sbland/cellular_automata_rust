@@ -9,7 +9,7 @@ def demo_run():
     initial_cell_data = [
         CellStatePy(i, (0, 1), 20)
         for i in range(100)]
-    global_state = GlobalStatePy()
+    global_state = GlobalStatePy(1)
 
     cell_data, global_state, network_map = run.run_iteration(
         initial_cell_data, global_state)
@@ -29,4 +29,5 @@ def demo_run():
         population_a = cell_data[0].population
     print("population_a", population_a)
     print("Iterations: ", global_state.iterations)
+    print("Global pop: ", global_state.population)
     print('Complete')
