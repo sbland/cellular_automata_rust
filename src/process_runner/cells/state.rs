@@ -4,6 +4,7 @@ use std::fmt;
 pub trait CellStateBase: fmt::Debug + Clone {
     fn id(&self) -> CellIndex;
     fn position(&self) -> Point<f64>;
+    fn randomize(&self) -> Self;
 }
 
 #[derive(Debug, Clone, PartialEq, Copy)]

@@ -4,6 +4,7 @@ use crate::process_runner::global::state::GlobalStateBase;
 use geo::point;
 use geo::Coordinate;
 use geo::Point;
+use rand::prelude::*;
 
 type PointF64 = Point<f64>;
 
@@ -47,6 +48,12 @@ impl CellStateBase for CellState {
     }
     fn position(&self) -> Point<f64> {
         self.position
+    }
+    fn randomize(&self) -> CellState {
+        let mut self_copy = self.clone();
+        let mut rng = rand::thread_rng();
+        self_copy.population = rng.gen();
+        self_copy
     }
 }
 

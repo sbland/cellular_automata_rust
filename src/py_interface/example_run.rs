@@ -1,5 +1,5 @@
 extern crate pyo3;
-use super::run::run_iteration_wrap;
+use super::run::run_iteration_py_wrap;
 use crate::process_runner::examples::example_processes::default_cell_processes;
 use crate::py_interface::examples::CellStatePy;
 use crate::py_interface::examples::GlobalStatePy;
@@ -23,7 +23,7 @@ pub fn run_iteration_py(
 ) -> PyResult<(Vec<CellStatePy>, GlobalStatePy, Vec<Vec<u32>>)> {
     // TODO: Add global processes
     let global_processes = vec![];
-    run_iteration_wrap(
+    run_iteration_py_wrap(
         cell_data,
         global_state,
         default_cell_processes(),

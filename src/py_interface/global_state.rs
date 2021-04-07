@@ -11,4 +11,4 @@ use crate::py_interface::PyWrapperBase;
 ///
 /// It should also implement new as a pymethod
 /// and the PyObjectProtocol
-pub trait GlobalStatePyBase<T: GlobalStateBase>: PyWrapperBase<T> {}
+pub trait GlobalStatePyBase<T: GlobalStateBase>: PyWrapperBase<T> + Default {}

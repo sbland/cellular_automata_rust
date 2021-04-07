@@ -7,9 +7,48 @@ use crate::process_runner::cells::state::CellStateBase;
 use crate::process_runner::global::run::Process as GlobalProcess;
 use crate::process_runner::global::state::GlobalStateBase;
 use crate::process_runner::run::run_iteration;
+use crate::process_runner::run::setup_initial_state;
 use crate::process_runner::state::IterationState;
 use crate::py_interface::cell_state::CellStatePyBase;
 use crate::py_interface::global_state::GlobalStatePyBase;
+
+/// Run model setup and return initial state.
+pub fn setup_initial_state_py_wrap<
+    T: CellStateBase,
+    S: CellStatePyBase<T>,
+    G: GlobalStateBase,
+    GW: GlobalStatePyBase<G>,
+>(
+    cell_setup_processes: Option<Vec<CellProcess<T, G>>>,
+    global_setup_processes: Option<Vec<GlobalProcess<T, G>>>,
+    cells_data: Vec<S>,
+    global_state: Option<GW>,
+    randomize: Option<bool>,
+) -> PyResult<(Vec<S>, GW, Vec<Vec<u32>>)> {
+    let initial_state = setup_initial_state(
+        Some(cell_setup_processes.unwrap_or_default().iter().collect()),
+        Some(global_setup_processes.unwrap_or_default().iter().collect()),
+        cells_data.iter().map(|c| c.get_inner()).collect::<Vec<T>>(),
+        global_state.unwrap_or_default().get_inner(),
+        randomize,
+    );
+
+    // 5. Wrap the cells state back up in the CellStatePy wrapper
+    let cell_data_outer: Vec<S> = initial_state
+        .cells
+        .iter()
+        .map(|c| S::from_inner(c))
+        .collect();
+
+    let network_converted: Vec<Vec<u32>> = initial_state
+        .network
+        .iter()
+        .map(|c| c.iter().map(|ci: &CellIndex| u32::from(*ci)).collect())
+        .collect();
+    let global_state_output = GW::from_inner(&initial_state.global_state);
+
+    Ok((cell_data_outer, global_state_output, network_converted))
+}
 
 /// Wrap the run_iteration function so we can perform python object conversions
 ///
@@ -20,7 +59,7 @@ use crate::py_interface::global_state::GlobalStatePyBase;
 ///
 /// By seperating this from the `run_iteration_py` function we can allow non python arguments
 ///
-pub fn run_iteration_wrap<
+pub fn run_iteration_py_wrap<
     T: CellStateBase,
     S: CellStatePyBase<T>,
     G: GlobalStateBase,
@@ -55,17 +94,13 @@ pub fn run_iteration_wrap<
     );
 
     // 5. Wrap the cells state back up in the CellStatePy wrapper
-    let cell_data_outer: Vec<S> = out_state
-        .cells
-        .iter()
-        .map(|c| S::from_inner(c))
-        .collect::<Vec<_>>();
+    let cell_data_outer: Vec<S> = out_state.cells.iter().map(|c| S::from_inner(c)).collect();
 
     let network_converted: Vec<Vec<u32>> = out_state
         .network
         .iter()
         .map(|c| c.iter().map(|ci: &CellIndex| u32::from(*ci)).collect())
-        .collect::<Vec<Vec<u32>>>();
+        .collect();
 
     // 6. Wrap the global state in the GlobalStatePy wrapper
     let global_state_output = GW::from_inner(&out_state.global_state);
