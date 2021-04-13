@@ -56,6 +56,8 @@ impl<C: CellStateBase, G: GlobalStateBase> Process<C, G> {
 }
 
 /// Apply all queued cell updates to the cells
+///
+/// Ensure that the cell order matches the original cell index order
 pub fn apply_cell_updates<T: CellStateBase + Clone>(
     cells_in: Vec<T>,
     cell_updates: Vec<CellUpdate<T>>,
