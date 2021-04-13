@@ -7,7 +7,7 @@ pub trait CellStateBase: fmt::Debug + Clone {
     fn randomize(&self) -> Self;
 }
 
-#[derive(Debug, Clone, PartialEq, Copy)]
+#[derive(Debug, Clone, PartialEq, Copy, Eq, Hash)]
 pub struct CellIndex(pub u32);
 
 impl fmt::Display for CellIndex {
